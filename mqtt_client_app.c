@@ -1221,7 +1221,7 @@ void mainThread(void * args)
 
     GPIO_init();
     SPI_init();
-    DebugGPIO_init();
+    initGPIO();
 
     /*Configure the UART                                                     */
     tUartHndl = InitTerm();

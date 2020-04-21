@@ -146,12 +146,14 @@ void dbgTestOut(){
     GPIO_write(CONFIG_GPIO_5, 1);
     GPIO_write(CONFIG_GPIO_6, 1);
     GPIO_write(CONFIG_GPIO_7, 1);
-    GPIO_write(CONFIG_GPIO_8, 1);
+    GPIO_write(CONFIG_GPIO_8_TRIG, 1);
 
 }
 
-void DebugGPIO_init() {
+void initGPIO() {
+
     GPIO_init();
+
     GPIO_setConfig(CONFIG_GPIO_1, GPIO_CFG_OUT_STD | GPIO_CFG_OUT_LOW);
     GPIO_setConfig(CONFIG_GPIO_2, GPIO_CFG_OUT_STD | GPIO_CFG_OUT_LOW);
     GPIO_setConfig(CONFIG_GPIO_3, GPIO_CFG_OUT_STD | GPIO_CFG_OUT_LOW);
@@ -159,7 +161,7 @@ void DebugGPIO_init() {
     GPIO_setConfig(CONFIG_GPIO_5, GPIO_CFG_OUT_STD | GPIO_CFG_OUT_LOW);
     GPIO_setConfig(CONFIG_GPIO_6, GPIO_CFG_OUT_STD | GPIO_CFG_OUT_LOW);
     GPIO_setConfig(CONFIG_GPIO_7, GPIO_CFG_OUT_STD | GPIO_CFG_OUT_LOW);
-    GPIO_setConfig(CONFIG_GPIO_8, GPIO_CFG_OUT_STD | GPIO_CFG_OUT_LOW);
+
     GPIO_write(CONFIG_GPIO_0, 0);
     GPIO_write(CONFIG_GPIO_1, 0);
     GPIO_write(CONFIG_GPIO_2, 0);
@@ -168,6 +170,5 @@ void DebugGPIO_init() {
     GPIO_write(CONFIG_GPIO_5, 0);
     GPIO_write(CONFIG_GPIO_6, 0);
     GPIO_write(CONFIG_GPIO_7, 0);
-    GPIO_write(CONFIG_GPIO_8, 0);
 }
 

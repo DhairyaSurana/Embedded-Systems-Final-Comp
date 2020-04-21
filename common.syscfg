@@ -35,6 +35,7 @@ var GPIO11 = GPIO.addInstance();
 var GPIO12 = GPIO.addInstance();
 var GPIO13 = GPIO.addInstance();
 var GPIO14 = GPIO.addInstance();
+var GPIO15 = GPIO.addInstance();
 // Name - The C/C++ identifier used in applications as the index parameter passed to Crypto runtime APIs
 Crypto1.$name = "CONFIG_Crypto_0";
 // IO Retention Shutdown - IO groups to be retained during Shutdown
@@ -168,7 +169,9 @@ GPIO12.$name = "CONFIG_GPIO_6";
 // Name - The C/C++ identifier used in applications as the index parameter passed to GPIO runtime APIs
 GPIO13.$name = "CONFIG_GPIO_7";
 // Name - The C/C++ identifier used in applications as the index parameter passed to GPIO runtime APIs
-GPIO14.$name = "CONFIG_GPIO_8";
+GPIO14.$name = "CONFIG_GPIO_8_TRIG";
+// Name - The C/C++ identifier used in applications as the index parameter passed to GPIO runtime APIs
+GPIO15.$name = "CONFIG_GPIO_9_ECHO";
 // Suggest solution
 GPIO3.gpioPin.$suggestSolution = "64";
 // Suggest solution
@@ -187,3 +190,5 @@ GPIO12.gpioPin.$suggestSolution = "53";
 GPIO13.gpioPin.$suggestSolution = "59";
 // Suggest solution
 GPIO14.gpioPin.$suggestSolution = "60";
+// Suggest solution
+GPIO15.gpioPin.$suggestSolution = "61";

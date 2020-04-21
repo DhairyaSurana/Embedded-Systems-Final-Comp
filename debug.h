@@ -55,7 +55,16 @@ void dbgUARTVal(unsigned char outVal);
 void dbgUARTStr(char outVal[]);
 */
 void dbgOutputLoc(unsigned int outLoc);
-void DebugGPIO_init();
+
 
 void dbgHaltAll(unsigned int outLoc);
 void dbgTestOut();
+
+//UART_Handle uart;
+
+void dbgUARTVal(unsigned char outVal);
+void dbgOutputLoc(unsigned int outLoc);
+void fatalError(unsigned int outLoc);
+void initUART();
+void initGPIO();
+
