@@ -19,7 +19,10 @@ typedef struct data_value
     unsigned int message_num_receive;
     char * source;
     char * message;
+    unsigned int time_val;
+    int sensor_val;
 } data_value;
+
 typedef struct data_struct
 {
     data_type type;

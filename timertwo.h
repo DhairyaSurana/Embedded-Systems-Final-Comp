@@ -21,7 +21,7 @@
 
 /* User Header Files*/
 //#include "debug.h"
-#include "sensor_queue.h"
+#include "com_queue.h"
 
 /*ADC microvolt to mm conversion constants*/
 #define DISTANCE_CONVERSION 1000000

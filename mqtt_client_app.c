@@ -70,10 +70,17 @@
 #include <ti/net/mqtt/mqttclient.h>
 
 /* Common interface includes                                                 */
+#include "com_queue.h"
 #include "network_if.h"
 #include "uart_term.h"
 #include "cJSON.h"
 #include "json_parse.h"
+
+#include "timerone.h"
+#include "timertwo.h"
+
+//#include "sensor_queue.h"
+#include "sensor_state.h"
 
 #include "debug.h" //RRR
 
@@ -82,6 +89,9 @@
 
 /* Application includes                                                      */
 #include "client_cbs.h"
+
+/* Sensor Code Includes                                                      */
+
 
 //*****************************************************************************
 //                          LOCAL DEFINES
@@ -136,6 +146,9 @@
 #define PUBLISH_TOPIC0           "/cc32xx/ButtonPressEvtSw2"
 #define PUBLISH_TOPIC0_DATA \
     "Push Button SW2 has been pressed on CC32xx device"
+#define PUBLISH_TOPIC1      "/cc32xx/Board0ack"
+#define PUBLISH_TOPIC2      "/cc32xx/Board2ack"
+#define PUBLISH_TOPIC3      "/cc32xx/Board3ack"
 
 /* Spawn task priority and Task and Thread Stack Size                        */
 #define TASKSTACKSIZE            2048
@@ -183,6 +196,9 @@ int32_t Mqtt_IF_Connect();
 int32_t MqttServer_start();
 int32_t MqttClient_start();
 int32_t MQTT_SendMsgToQueue(struct msgQueue *queueElement);
+
+void * PublishThread(void *pvParameters);
+void * SubscribeThread(void *pvParameters);
 
 //*****************************************************************************
 //                 GLOBAL VARIABLES
@@ -691,6 +707,127 @@ void * MqttClient(void *pvParameters)
     }
 }
 
+
+
+void timerThreeCallback(Timer_Handle timerHandle){
+
+    data_struct data;
+    data.type = message_data;
+    data.value.message = "hello";
+    data.value.message_num_receive = 9;
+    data.value.message_num_sent = 6;
+    data.value.source = "1";
+
+//    dev_data data;
+//        data.id = "ultra";
+//        data.pub = 0;
+//        data.rec = 0;
+//        data.dist = 0;
+
+    sendStatisticsToPublishQueue(data);
+}
+
+
+void * PublishThread(void *pvParameters) {
+
+    long lRetVal = -1;
+    Timer_init();
+    Timer_Handle timer1;
+    Timer_Params params1;
+    Timer_Params_init(&params1);
+
+    /* Initalizing params */
+    params1.period = 100000;
+    params1.periodUnits = Timer_PERIOD_US;
+    params1.timerMode = Timer_CONTINUOUS_CALLBACK;
+    params1.timerCallback = timerThreeCallback;
+
+    /*Opening Timer*/
+    timer1 = Timer_open(Board_TIMER3, &params1);
+
+    if (timer1 == NULL)
+    {
+    }
+    Timer_start(timer1);
+
+    data_struct data;
+    char output[256];
+    while (1)
+    {
+        data = readStatisticsFromPublishQueue();
+        sprintf(output, "{\"source\": \"%s\"}", data.value.source);
+        lRetVal = MQTTClient_publish(
+                gMqttClient, (char*) publish_topic,
+                strlen((char*) publish_topic), (char*) output,
+                strlen((char*) output),
+                MQTT_QOS_0 | ((RETAIN_ENABLE) ? MQTT_PUBLISH_RETAIN : 0));
+
+    }
+}
+
+
+void * SubscribeThread(void *pvParameters) {
+
+    long lRetVal = -1;
+    data_struct data;
+    data_struct ack;
+    ack.type = message_data;
+    ack.value.message = "received";
+    ack.value.message_num_receive = 0;
+    ack.value.message_num_sent = 0;
+    ack.value.source = "0";
+    char output[256];
+    char numMsg ;
+
+
+    while (1)
+    {
+        if (mq_receive(g_PBQueue, (char*) &data, sizeof(struct data_struct),
+        NULL) != -1)
+        {
+            sprintf(output, "{\"source\": \"%s\"}", "1");
+            numMsg = data.value.message[12];
+
+
+            if (numMsg == '0')
+            {
+                lRetVal = MQTTClient_publish(
+                        gMqttClient,
+                        (char*) PUBLISH_TOPIC1,
+                        strlen((char*) PUBLISH_TOPIC1),
+                        (char*) output,
+                        strlen((char*) output),
+                        MQTT_QOS_0
+                                | ((RETAIN_ENABLE) ? MQTT_PUBLISH_RETAIN : 0));
+            }
+            else if (numMsg == '1')
+            {
+                lRetVal = MQTTClient_publish(
+                        gMqttClient,
+                        (char*) PUBLISH_TOPIC2,
+                        strlen((char*) PUBLISH_TOPIC2),
+                        (char*) output,
+                        strlen((char*) output),
+                        MQTT_QOS_0
+                                | ((RETAIN_ENABLE) ? MQTT_PUBLISH_RETAIN : 0));
+            }
+            else if (numMsg == '3')
+            {
+                lRetVal = MQTTClient_publish(
+                        gMqttClient,
+                        (char*) PUBLISH_TOPIC3,
+                        strlen((char*) PUBLISH_TOPIC3),
+                        (char*) output,
+                        strlen((char*) output),
+                        MQTT_QOS_0
+                                | ((RETAIN_ENABLE) ? MQTT_PUBLISH_RETAIN : 0));
+            }
+        }
+    }
+}
+
+
+
 //*****************************************************************************
 //
 //! This function connect the MQTT device to an AP with the SSID which was
@@ -721,7 +858,7 @@ int32_t Mqtt_IF_Connect()
     /*Display Application Banner                                             */
     DisplayBanner(APPLICATION_NAME);
 
-    runTestCases();
+    //runTestCases();
 
     GPIO_write(CONFIG_GPIO_LED_0, CONFIG_GPIO_LED_OFF);
     GPIO_write(CONFIG_GPIO_LED_1, CONFIG_GPIO_LED_OFF);

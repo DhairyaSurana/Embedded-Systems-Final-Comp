@@ -7,7 +7,7 @@
 
 /*User Header Files*/
 //#include "debug.h"
-#include "sensor_queue.h"
+#include "com_queue.h"
 
 /* Driver Header Files */
 #include <ti/drivers/Timer.h>
