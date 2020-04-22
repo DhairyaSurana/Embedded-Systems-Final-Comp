@@ -1,14 +1,14 @@
 #include "com_queue.h"
 #include "cJSON.h"
 
-char * createNewMsg() {
+char * createNewMsg(int pub, int rec, int dist, int time) {
 
     cJSON *msg = cJSON_CreateObject();
     cJSON_AddItemToObject(msg, "id", cJSON_CreateString("ultra"));
-    cJSON_AddItemToObject(msg, "pub", cJSON_CreateNumber(0));
-    cJSON_AddItemToObject(msg, "rec", cJSON_CreateNumber(0));
-    cJSON_AddItemToObject(msg, "distance", cJSON_CreateNumber(0));
-    cJSON_AddItemToObject(msg, "time", cJSON_CreateNumber(0));
+    cJSON_AddItemToObject(msg, "pub", cJSON_CreateNumber(pub));
+    cJSON_AddItemToObject(msg, "rec", cJSON_CreateNumber(rec));
+    cJSON_AddItemToObject(msg, "distance", cJSON_CreateNumber(dist));
+    cJSON_AddItemToObject(msg, "time", cJSON_CreateNumber(time));
 
     return cJSON_Print(msg);
 }
@@ -40,8 +40,10 @@ mqtt_data_struct readStatisticsFromPublishQueue()
 //        cJSON_AddItemToObject(msg, "distance", cJSON_CreateNumber(0));
 //        cJSON_AddItemToObject(msg, "time", cJSON_CreateNumber(0));
 
-    mqtt_data_struct data = { .type = no_data, .value.message_num_sent = 0,
-                           .value.message_num_receive = 0, .value.message = createNewMsg() };
+//    mqtt_data_struct data = { .type = no_data, .value.message_num_sent = 0,
+//                           .value.message_num_receive = 0, .value.message = "" };
+
+    mqtt_data_struct data = { .type = no_data, .message = "" };
 
     xQueueReceive(publish_queue_handle, &data, portMAX_DELAY);
     return data;

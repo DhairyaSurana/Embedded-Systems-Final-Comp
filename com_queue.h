@@ -26,14 +26,15 @@ typedef struct mqtt_data_value
 typedef struct mqtt_data_struct
 {
     mqtt_data_type type;
-    mqtt_data_value value;
+    //mqtt_data_value value;
+    char * message;
 } mqtt_data_struct;
 
 /* Global Handle for the sensor queue */
 QueueHandle_t publish_queue_handle;
 QueueHandle_t subscribe_queue_handle;
 
-char * createNewMsg();
+char * createNewMsg(int pub, int rec, int dist, int time);
 
 /* Function to send a time value to a queue. */
 int sendStatisticsToPublishQueue(mqtt_data_struct statistics);

@@ -232,7 +232,8 @@ void MqttClientCallback(int32_t event,
 //        queueElem.msgPtr = pubBuff;
 //        queueElem.topLen = recvMetaData->topLen;
         queueElem.type = message_data;
-        queueElem.value.message = (pubBuff + payloadOffset);
+        //queueElem.value.message = (pubBuff + payloadOffset);
+        queueElem.message = (pubBuff + payloadOffset);
 
         /* signal to the main task                                        */
         if(MQTT_SendMsgToQueue(&queueElem))

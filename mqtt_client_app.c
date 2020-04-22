@@ -178,6 +178,9 @@
 /* Expiration value for the timer that is being used to toggle the Led.      */
 #define TIMER_EXPIRATION_VALUE   100 * 1000000
 
+/* To run test cases, use #define, otherwise use #undef                      */
+#undef TEST_CASES
+
 //*****************************************************************************
 //                      LOCAL FUNCTION PROTOTYPES
 //*****************************************************************************
@@ -199,8 +202,6 @@ int32_t MQTT_SendMsgToQueue(struct msgQueue *queueElement);
 
 void * PublishThread(void *pvParameters);
 void * SubscribeThread(void *pvParameters);
-
-char * createNewMsg();
 
 //*****************************************************************************
 //                 GLOBAL VARIABLES
@@ -506,61 +507,61 @@ static void runTestCases() {
 
    UART_PRINT("================================================= TEST CASES ==========================================================================\r\n\r\n");
 
-//   char *ultra_json =  "{\"id\": \"ultra\", \"pub\": 2675, \"rec\": 3, \"time\": 4, \"distance\": 45}\n\r";
-//   char *arm_json = "{\"id\": \"arm\", \"pub\": 2675, \"rec\": 3, \"time\": 4, \"status\": \"yeet\"}\n\r";
-//   char *rover_json = "{ \"id\": \"rover\", \"pub\": 2675, \"rec\": 3, \"time\": 4, \"status\": \"skrrt\", \"atDestination\": \"false\"}\n\r";
-//   char *pixy_json = "{ \"id\": \"pixy\", \"pub\": 2675, \"rec\": 3, \"time\": 4, \"x_coordinate\": 0, \"y_coordinate\": 78, \"height\": 63, \"width\": 3, \"signature\": 232}\n\r";
-//   char *topic_json= "{\"id\": \"topics\", \"pub\": 2675, \"rec\": 3, \"topic1\": \"asdf\", \"topic2\": \"yeet\", \"topic3\": \"ffff\", \"topic4\": \"ffdf\"}\n\r";
-//   char *stat_json = "{\"id\": \"statistics\", \"pub\": 2675, \"rec\": 3}\n\r";
-//
-//   // Error-handling
-//   char *imp_form_json = "\"id\": \"arm\", \"pub\": 2675, \"rec\": 3, \"time\": 4, \"status\": \"asdf\"}\n\r";
-//   char *empty_json = "{}\r\n";
-//   char *miss_field_json = "{\"id\": \"arm\", \"time\": 4, \"distance\": 5, \"atDestination\": \"false\"}\n\r";
-//   char *inval_id_json = "{\"id\": \"asdfadfdasdf\", \"pub\": 2675, \"rec\": 3, \"time\": 4, \"status\": \"asdf\"}\n\r";
-//
-//
-//   UART_PRINT("ULTRA MESSAGE: %s", ultra_json);
-//   dev_data d = getJSONData(ultra_json);
-//   printDevData(d);
-//
-//   UART_PRINT("ARM MESSAGE: %s", arm_json);
-//   d = getJSONData(arm_json);
-//   printDevData(d);
-//
-//   UART_PRINT("ROVER MESSAGE: %s", rover_json);
-//   d = getJSONData(rover_json);
-//   printDevData(d);
-//
-//   UART_PRINT("PIXY MESSAGE: %s", pixy_json);
-//   d = getJSONData(pixy_json);
-//   printDevData(d);
-//
-//   UART_PRINT("TOPICS MESSAGE: %s", topic_json);
-//   d = getJSONData(topic_json);
-//   printDevData(d);
-//
-//   UART_PRINT("STATISTICS MESSAGE: %s", stat_json);
-//   d = getJSONData(stat_json);
-//   printDevData(d);
-//
-//   UART_PRINT("IMPROPERLY FORMATTED MESSAGE: %s", imp_form_json);
-//   d = getJSONData(imp_form_json);
-//   printDevData(d);
-//
-//   UART_PRINT("EMPTY MESSAGE: %s", empty_json);
-//   d = getJSONData(empty_json);
-//   printDevData(d);
-//
-//   UART_PRINT("MISSING FIELD MESSAGE: %s", miss_field_json);
-//   d = getJSONData(miss_field_json);
-//   printDevData(d);
-//
-//   UART_PRINT("WRONG ID MESSAGE: %s", inval_id_json);
-//   d = getJSONData(inval_id_json);
-//   printDevData(d);
-//
-//   UART_PRINT("=======================================================================================================================================\r\n\r\n");
+   char *ultra_json =  "{\"id\": \"ultra\", \"pub\": 2675, \"rec\": 3, \"time\": 4, \"distance\": 45}\n\r";
+   char *arm_json = "{\"id\": \"arm\", \"pub\": 2675, \"rec\": 3, \"time\": 4, \"status\": \"yeet\"}\n\r";
+   char *rover_json = "{ \"id\": \"rover\", \"pub\": 2675, \"rec\": 3, \"time\": 4, \"status\": \"skrrt\", \"atDestination\": \"false\"}\n\r";
+   char *pixy_json = "{ \"id\": \"pixy\", \"pub\": 2675, \"rec\": 3, \"time\": 4, \"x_coordinate\": 0, \"y_coordinate\": 78, \"height\": 63, \"width\": 3, \"signature\": 232}\n\r";
+   char *topic_json= "{\"id\": \"topics\", \"pub\": 2675, \"rec\": 3, \"topic1\": \"asdf\", \"topic2\": \"yeet\", \"topic3\": \"ffff\", \"topic4\": \"ffdf\"}\n\r";
+   char *stat_json = "{\"id\": \"statistics\", \"pub\": 2675, \"rec\": 3}\n\r";
+
+   // Error-handling
+   char *imp_form_json = "\"id\": \"arm\", \"pub\": 2675, \"rec\": 3, \"time\": 4, \"status\": \"asdf\"}\n\r";
+   char *empty_json = "{}\r\n";
+   char *miss_field_json = "{\"id\": \"arm\", \"time\": 4, \"distance\": 5, \"atDestination\": \"false\"}\n\r";
+   char *inval_id_json = "{\"id\": \"asdfadfdasdf\", \"pub\": 2675, \"rec\": 3, \"time\": 4, \"status\": \"asdf\"}\n\r";
+
+
+   UART_PRINT("ULTRA MESSAGE: %s", ultra_json);
+   dev_data d = getJSONData(ultra_json);
+   printDevData(d);
+
+   UART_PRINT("ARM MESSAGE: %s", arm_json);
+   d = getJSONData(arm_json);
+   printDevData(d);
+
+   UART_PRINT("ROVER MESSAGE: %s", rover_json);
+   d = getJSONData(rover_json);
+   printDevData(d);
+
+   UART_PRINT("PIXY MESSAGE: %s", pixy_json);
+   d = getJSONData(pixy_json);
+   printDevData(d);
+
+   UART_PRINT("TOPICS MESSAGE: %s", topic_json);
+   d = getJSONData(topic_json);
+   printDevData(d);
+
+   UART_PRINT("STATISTICS MESSAGE: %s", stat_json);
+   d = getJSONData(stat_json);
+   printDevData(d);
+
+   UART_PRINT("IMPROPERLY FORMATTED MESSAGE: %s", imp_form_json);
+   d = getJSONData(imp_form_json);
+   printDevData(d);
+
+   UART_PRINT("EMPTY MESSAGE: %s", empty_json);
+   d = getJSONData(empty_json);
+   printDevData(d);
+
+   UART_PRINT("MISSING FIELD MESSAGE: %s", miss_field_json);
+   d = getJSONData(miss_field_json);
+   printDevData(d);
+
+   UART_PRINT("WRONG ID MESSAGE: %s", inval_id_json);
+   d = getJSONData(inval_id_json);
+   printDevData(d);
+
+   UART_PRINT("=======================================================================================================================================\r\n\r\n");
 
 }
 
@@ -633,6 +634,7 @@ void * MqttClient(void *pvParameters)
     /*client) OR msg received by the client from the remote broker (need to  */
     /*be sent to the server to see if any local client has subscribed on the */
     /*same topic).                                                           */
+    static int pub_count = 0;
     for(;; )
     {
         dbgOutputLoc(DBG_MqttClient_WAITFORSIG);
@@ -645,7 +647,8 @@ void * MqttClient(void *pvParameters)
         case PUBLISH_PUSH_BUTTON_PRESSED:
             dbgOutputLoc(DBG_MqttClient_PUBLISH);
 
-            char *new_msg = createNewMsg();
+
+            char *new_msg = createNewMsg(pub_count, 0, 0, 0);
             /*send publish message                                       */
             lRetVal =
                 MQTTClient_publish(gMqttClient, (char*) publish_topic, strlen(
@@ -657,6 +660,8 @@ void * MqttClient(void *pvParameters)
             UART_PRINT("\n\r CC3200 Publishes the following message \n\r");
             UART_PRINT("Topic: %s\n\r", publish_topic);
             UART_PRINT("Data: %s\n\r", new_msg);                                   // UART_PRINT("Data: %s\n\r", publish_data)
+
+            pub_count++;
 
             /* Clear and enable again the SW2 interrupt */
             GPIO_clearInt(CONFIG_GPIO_BUTTON_0);     // SW2
@@ -717,30 +722,14 @@ void * MqttClient(void *pvParameters)
 
 void timerThreeCallback(Timer_Handle timerHandle){
 
+    static mqtt_data_struct data;
 
-//    dev_data data;
-//        data.id = "ultra";
-//        data.pub = 0;
-//        data.rec = 0;
-//        data.dist = 0;
-
-//    cJSON *msg = cJSON_CreateObject();
-//    cJSON_AddItemToObject(msg, "id", cJSON_CreateString("ultra"));
-//    cJSON_AddItemToObject(msg, "pub", cJSON_CreateNumber(0));
-//    cJSON_AddItemToObject(msg, "rec", cJSON_CreateNumber(0));
-//    cJSON_AddItemToObject(msg, "distance", cJSON_CreateNumber(0));
-//    cJSON_AddItemToObject(msg, "time", cJSON_CreateNumber(0));
-
-//    UART_PRINT("MESSAGE: ");
-//    UART_PRINT(cJSON_Print(msg));
-//    UART_PRINT("\r\n");
-
-        mqtt_data_struct data;
         data.type = message_data;
-        data.value.message = createNewMsg();
-        data.value.message_num_receive = 9;
-        data.value.message_num_sent = 6;
-        data.value.source = "1";
+//        data.value.message = createNewMsg();
+//        data.value.message_num_receive = 0;
+//        data.value.message_num_sent++;
+//        data.value.source = "1";
+        data.message = createNewMsg(0, 0, 0, 0);
 
 
     sendStatisticsToPublishQueue(data);
@@ -780,10 +769,10 @@ void * PublishThread(void *pvParameters) {
     while (1) {
 
         data = readStatisticsFromPublishQueue();
-        sprintf(output, "{\"source\": \"%s\"}", data.value.source);
+        //sprintf(output, "{\"source\": \"%s\"}", data.value.source);
 
         UART_PRINT("Published the following message: ");
-        UART_PRINT(data.value.message);
+        UART_PRINT(data.message);
         UART_PRINT("/r/n");
 
         lRetVal = MQTTClient_publish(
@@ -794,68 +783,6 @@ void * PublishThread(void *pvParameters) {
 
     }
 }
-
-
-//void * SubscribeThread(void *pvParameters) {
-//
-//    long lRetVal = -1;
-//    mqtt_data_struct data;
-//    mqtt_data_struct ack;
-//    ack.type = message_data;
-//    ack.value.message = "received";
-//    ack.value.message_num_receive = 0;
-//    ack.value.message_num_sent = 0;
-//    ack.value.source = "0";
-//    char output[256];
-//    char numMsg ;
-//
-//
-//    while (1)
-//    {
-//        if (mq_receive(g_PBQueue, (char*) &data, sizeof(struct mqtt_data_struct),
-//        NULL) != -1)
-//        {
-//            sprintf(output, "{\"source\": \"%s\"}", "1");
-//            numMsg = data.value.message[12];
-//
-//
-//            if (numMsg == '0')
-//            {
-//                lRetVal = MQTTClient_publish(
-//                        gMqttClient,
-//                        (char*) PUBLISH_TOPIC1,
-//                        strlen((char*) PUBLISH_TOPIC1),
-//                        (char*) output,
-//                        strlen((char*) output),
-//                        MQTT_QOS_0
-//                                | ((RETAIN_ENABLE) ? MQTT_PUBLISH_RETAIN : 0));
-//            }
-//            else if (numMsg == '1')
-//            {
-//                lRetVal = MQTTClient_publish(
-//                        gMqttClient,
-//                        (char*) PUBLISH_TOPIC2,
-//                        strlen((char*) PUBLISH_TOPIC2),
-//                        (char*) output,
-//                        strlen((char*) output),
-//                        MQTT_QOS_0
-//                                | ((RETAIN_ENABLE) ? MQTT_PUBLISH_RETAIN : 0));
-//            }
-//            else if (numMsg == '3')
-//            {
-//                lRetVal = MQTTClient_publish(
-//                        gMqttClient,
-//                        (char*) PUBLISH_TOPIC3,
-//                        strlen((char*) PUBLISH_TOPIC3),
-//                        (char*) output,
-//                        strlen((char*) output),
-//                        MQTT_QOS_0
-//                                | ((RETAIN_ENABLE) ? MQTT_PUBLISH_RETAIN : 0));
-//            }
-//        }
-//    }
-//}
-
 
 
 //*****************************************************************************
@@ -870,6 +797,7 @@ void * PublishThread(void *pvParameters) {
 //! \return None
 //!
 //*****************************************************************************
+
 int32_t Mqtt_IF_Connect()
 {
     int32_t lRetVal;
@@ -888,7 +816,9 @@ int32_t Mqtt_IF_Connect()
     /*Display Application Banner                                             */
     DisplayBanner(APPLICATION_NAME);
 
-    //runTestCases();
+#ifdef TEST_CASES
+    runTestCases();
+#endif
 
     GPIO_write(CONFIG_GPIO_LED_0, CONFIG_GPIO_LED_OFF);
     GPIO_write(CONFIG_GPIO_LED_1, CONFIG_GPIO_LED_OFF);
