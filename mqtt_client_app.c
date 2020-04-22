@@ -203,6 +203,8 @@ int32_t MQTT_SendMsgToQueue(struct msgQueue *queueElement);
 void * PublishThread(void *pvParameters);
 void * SubscribeThread(void *pvParameters);
 
+int getTime();
+
 //*****************************************************************************
 //                 GLOBAL VARIABLES
 //*****************************************************************************
@@ -608,6 +610,14 @@ void * MqttClientThread(void * pvParameters)
 //!
 //*****************************************************************************
 
+int getTime() {
+
+    if(abs(time(NULL) >=  2085978489))
+        return abs(abs(time(NULL)) - 2085978489);
+    else
+        return abs(2085978489 - abs(time(NULL)));
+
+}
 void * MqttClient(void *pvParameters)
 {
     dbgOutputLoc(DBG_MqttClient_START);
@@ -634,7 +644,9 @@ void * MqttClient(void *pvParameters)
     /*client) OR msg received by the client from the remote broker (need to  */
     /*be sent to the server to see if any local client has subscribed on the */
     /*same topic).                                                           */
-    static int pub_count = 0;
+
+    static int pub_count = 1;
+
     for(;; )
     {
         dbgOutputLoc(DBG_MqttClient_WAITFORSIG);
@@ -648,7 +660,7 @@ void * MqttClient(void *pvParameters)
             dbgOutputLoc(DBG_MqttClient_PUBLISH);
 
 
-            char *new_msg = createNewMsg(pub_count, 0, 0, 0);
+            char *new_msg = createNewMsg(pub_count, 0, 0, getTime());
             /*send publish message                                       */
             lRetVal =
                 MQTTClient_publish(gMqttClient, (char*) publish_topic, strlen(
@@ -710,12 +722,17 @@ void * MqttClient(void *pvParameters)
             pthread_exit(0);
             return(NULL);
         default:
+
             gResetApplication = true;
             gUiConnFlag = 0;
             pthread_exit(0);
             return(NULL);
         }
+
+
     }
+
+
 }
 
 
