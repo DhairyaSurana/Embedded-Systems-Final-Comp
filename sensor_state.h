@@ -1,6 +1,6 @@
 /* State Machine Enumeration Structure*/
 
-#include "com_queue.h"
+#include "sensor_queue.h"
 
 /* State Machine Structure*/
 typedef int timeVal_t;

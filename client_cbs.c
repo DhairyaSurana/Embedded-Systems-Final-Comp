@@ -175,7 +175,8 @@ void MqttClientCallback(int32_t event,
 
         struct publishMsgHeader msgHead;
 
-        data_struct queueElem;
+        mqtt_data_struct queueElem;
+        //char *queueElem;
 
         char *pubBuff = NULL;
 

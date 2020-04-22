@@ -1,6 +1,19 @@
 #include "com_queue.h"
+#include "cJSON.h"
 
-int sendStatisticsToPublishQueue(data_struct statistics)
+char * createNewMsg() {
+
+    cJSON *msg = cJSON_CreateObject();
+    cJSON_AddItemToObject(msg, "id", cJSON_CreateString("ultra"));
+    cJSON_AddItemToObject(msg, "pub", cJSON_CreateNumber(0));
+    cJSON_AddItemToObject(msg, "rec", cJSON_CreateNumber(0));
+    cJSON_AddItemToObject(msg, "distance", cJSON_CreateNumber(0));
+    cJSON_AddItemToObject(msg, "time", cJSON_CreateNumber(0));
+
+    return cJSON_Print(msg);
+}
+
+int sendStatisticsToPublishQueue(mqtt_data_struct statistics)
 {
     BaseType_t xHigherPriorityTaskWoken = pdFALSE;
     BaseType_t result = xQueueSendFromISR(publish_queue_handle, &statistics,
@@ -17,10 +30,19 @@ int sendStatisticsToSubscribeQueue()
     return (pdPASS == result);
 }
 
-data_struct readStatisticsFromPublishQueue()
+mqtt_data_struct readStatisticsFromPublishQueue()
 {
-    data_struct data = { .type = no_data, .value.message_num_sent = 0,
-                         .value.message_num_receive = 0, .value.message = "" };
+
+//    cJSON *msg = cJSON_CreateObject();
+//        cJSON_AddItemToObject(msg, "id", cJSON_CreateString("ultra"));
+//        cJSON_AddItemToObject(msg, "pub", cJSON_CreateNumber(0));
+//        cJSON_AddItemToObject(msg, "rec", cJSON_CreateNumber(0));
+//        cJSON_AddItemToObject(msg, "distance", cJSON_CreateNumber(0));
+//        cJSON_AddItemToObject(msg, "time", cJSON_CreateNumber(0));
+
+    mqtt_data_struct data = { .type = no_data, .value.message_num_sent = 0,
+                           .value.message_num_receive = 0, .value.message = createNewMsg() };
+
     xQueueReceive(publish_queue_handle, &data, portMAX_DELAY);
     return data;
 }
@@ -34,6 +56,6 @@ uint8_t readStatisticsFromSubscribeQueue()
 
 void initStatisticsQueues()
 {
-    publish_queue_handle = xQueueCreate(QUEUE_LENGTH, sizeof(data_struct));
+    publish_queue_handle = xQueueCreate(QUEUE_LENGTH, sizeof(cJSON));
     subscribe_queue_handle = xQueueCreate(QUEUE_LENGTH, sizeof(uint8_t));
 }

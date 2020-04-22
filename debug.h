@@ -38,7 +38,7 @@
 #define DLOC_TIMERONE_FAILED_START      0x61
 
 // Timer 2 errors
-#define DLOC_TIMETWO_FAILED_INIT        0x63
+#define DLOC_TIMERTWO_FAILED_INIT        0x63
 #define DLOC_TIMERTWO_FAILED_START      0x64
 #define DLOC_TIMERTWO_ADC_FAILED        0x65
 

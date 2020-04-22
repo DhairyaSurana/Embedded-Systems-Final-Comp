@@ -45,7 +45,7 @@ void initTimerTwo() {
     timer2 = Timer_open(CONFIG_TIMER_1, &params2);
 
     if (timer2 == NULL)
-        fatalError(DLOC_TIMETWO_FAILED_INIT);
+        fatalError(DLOC_TIMERTWO_FAILED_INIT);
 
     if (Timer_start(timer2) == Timer_STATUS_ERROR)
         fatalError(DLOC_TIMERTWO_FAILED_START);
