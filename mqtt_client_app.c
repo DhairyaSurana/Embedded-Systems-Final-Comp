@@ -253,6 +253,7 @@ pthread_t appThread = (pthread_t) NULL;
 timer_t g_timer;
 
 pthread_t publishThread = (pthread_t) NULL;
+pthread_t obstacleDetectionThread = (pthread_t) NULL;
 
 /* Printing new line                                                         */
 char lineBreak[] = "\n\r";
@@ -815,33 +816,66 @@ void * MqttClient(void *pvParameters)
 //    sendStatisticsToPublishQueue(data);
 //}
 
-//void sensCallback(Timer_Handle handle) {
-//
-//    static uint32_t prev_count, curr_count;
-//    int dist;
-//    //mqtt_data_struct data;
-//
-//    if (GPIO_read(Board_GPIO9_Echo) == 1) {
-//        prev_count = Timer_getCount(timer1);        // Change this to timerHandle
-//    }
-//    else {
-//
-//        curr_count = Timer_getCount(timer1);
-//        dist = getDistInCM(curr_count - prev_count); // Calculates distance
-//
-//        sendSensMsgToQ(dist);
-//    }
-//}
-//
-//void initSensor() {
-//
-//    GPIO_setCallback(Board_GPIO9_Echo, sensCallback); // bind sensor callback to echo (GPIO 9) pin interrupt (Change-notice)
-//    GPIO_enableInt(Board_GPIO9_Echo);   // enable echo interrupt
-//}
+void sensCallback() {
 
-void * PublishThread(void *pvParameters) {
+    static uint32_t prev_count, curr_count;
+    int dist;
+    //mqtt_data_struct data;
+
+    if (GPIO_read(Board_GPIO9_Echo) == 1) {
+        prev_count = Timer_getCount(timer1);        // Change this to timerHandle
+    }
+    else {
+
+        curr_count = Timer_getCount(timer1);
+        dist = getDistInCM(curr_count - prev_count); // Calculates distance
+
+        sendSensMsgToQ(dist);
+    }
+}
+
+void initSensor() {
+
+    GPIO_setCallback(Board_GPIO9_Echo, sensCallback); // bind sensor callback to echo (GPIO 9) pin interrupt (Change-notice)
+    GPIO_enableInt(Board_GPIO9_Echo);   // enable echo interrupt
+}
+
+void * PublishThread(void *vParameters) {
 
     long lRetVal = -1;
+
+    sensor_struct curr_sens_data;
+    sensorStructInit(&curr_sens_data);  // holds the current sensor data
+
+    int dist = 0;
+    while (1){
+
+           data_struct new_sens_msg = readMsgFromQ(); // reads message from queue (non-blocking)
+
+           if (new_sens_msg.type != no_data) {
+               dist = getSensorInfo(&curr_sens_data, &new_sens_msg);    // updates the current data with the new data from the message and prints out values
+           }
+
+           char *msg = createNewMsg(0, 0, dist, getTime());
+
+           lRetVal = MQTTClient_publish(
+                           gMqttClient, (char*) publish_topic,
+                           strlen((char*) publish_topic), (char*) msg,
+                           strlen((char*) msg),
+                           MQTT_QOS_0 | ((RETAIN_ENABLE) ? MQTT_PUBLISH_RETAIN : 0));
+
+           if(lRetVal >= 0) {
+               UART_PRINT("Published to MQTT Successfully: %s\r\n", msg);
+           }
+           else {
+               UART_PRINT("Error: Not able to publish to MQTT\r\n");
+           }
+    }
+}
+
+void * obstacleDetectionTask(void *pvParameters) {
+
+    //long lRetVal = -1;
 
     //initUART();
 
@@ -853,96 +887,8 @@ void * PublishThread(void *pvParameters) {
     initTimerOne();
     initTimerTwo();
 
-    //char output[256];
-
     sensor_struct curr_sens_data;
     sensorStructInit(&curr_sens_data);
-
-    int dist = 0;
-    while (1) {
-
-       // UART_PRINT("Entered loop\r\n");
-        data_struct new_sens_msg = readMsgFromQ();
-
-        if (new_sens_msg.type != no_data) {
-           // UART_PRINT("Entered asdf\r\n");
-            dist = getSensorInfo(&curr_sens_data, &new_sens_msg);
-           // UART_PRINT("Distance: %d cm\r\n", dist);
-        }
-
-        char *msg = createNewMsg(0, 0, dist, getTime());
-
-        lRetVal = MQTTClient_publish(
-                        gMqttClient, (char*) publish_topic,
-                        strlen((char*) publish_topic), (char*) msg,
-                        strlen((char*) msg),
-                        MQTT_QOS_0 | ((RETAIN_ENABLE) ? MQTT_PUBLISH_RETAIN : 0));
-
-        if(lRetVal >= 0) {
-            UART_PRINT("Published to MQTT Successfully: %s\r\n", msg);
-        }
-        else {
-            UART_PRINT("Error: Not able to publish to MQTT\r\n");
-        }
-
-    }
-
-    //    long lRetVal = -1;
-    //    UART_PRINT("Entered PublishThread\r\n");
-    //
-    //    Timer_init();
-    //    Timer_Handle timer1;
-    //    UART_PRINT("Initialized timer\r\n");
-    //
-    //    Timer_Params params1;
-    //    Timer_Params_init(&params1);
-    //
-    //
-    //    /* Initalizing params */
-    //    params1.period = 100000;
-    //    params1.periodUnits = Timer_PERIOD_US;
-    //    params1.timerMode = Timer_CONTINUOUS_CALLBACK;
-    //    params1.timerCallback = timerThreeCallback;
-    //    UART_PRINT("Initialized timer params\r\n");
-    //
-    //    /*Opening Timer*/
-    //    timer1 = Timer_open(Board_TIMER3, &params1);
-    //
-    //    if (timer1 == NULL) {
-    //        UART_PRINT("Error in opening timer");
-    //    }
-    //        //fatalError(DLOC_TIMERONE_FAILED_INIT);
-    //
-    //    if(Timer_start(timer1) == Timer_STATUS_ERROR) {
-    //        UART_PRINT("Error in starting timer");
-    //    }
-    //        //fatalError(DLOC_TIMERONE_FAILED_START);
-    //
-    //    //Timer_start(timer1);
-    //    UART_PRINT("Started Timer successfully\r\n");
-    //
-    //    //initTimerOne();
-    //
-    //    mqtt_data_struct data;
-    //    char output[256];
-    //
-    //    while (1) {
-    //
-    //        UART_PRINT("Entered loop\r\n");
-    //        data = readStatisticsFromPublishQueue();
-    //        //sprintf(output, "{\"source\": \"%s\"}", data.value.source);
-    //
-    //        UART_PRINT("Published the following message: ");
-    //        UART_PRINT(data.message);
-    //        UART_PRINT("/r/n");
-    //
-    //        lRetVal = MQTTClient_publish(
-    //                gMqttClient, (char*) publish_topic,
-    //                strlen((char*) publish_topic), (char*) output,
-    //                strlen((char*) output),
-    //                MQTT_QOS_0 | ((RETAIN_ENABLE) ? MQTT_PUBLISH_RETAIN : 0));
-    //
-    //    }
 
 }
 
@@ -1084,12 +1030,33 @@ void Mqtt_start()
         return;
     }
 
-    /*enable interrupt for the GPIO 13 (SW3) and GPIO 22 (SW2).              */
-    GPIO_setCallback(CONFIG_GPIO_BUTTON_0, pushButtonInterruptHandler2);
-    GPIO_enableInt(CONFIG_GPIO_BUTTON_0); // SW2
+    retc = pthread_create(&obstacleDetectionThread, &pAttrs, obstacleDetectionTask,
+                                (void *) &threadArg);
+          if (retc != 0)
+          {
+              gInitState &= ~MQTT_INIT_STATE;
+              UART_PRINT("MQTT thread create fail\n\r");
+              return;
+          }
 
-    GPIO_setCallback(CONFIG_GPIO_BUTTON_1, pushButtonInterruptHandler3);
-    GPIO_enableInt(CONFIG_GPIO_BUTTON_1); // SW3
+         retc = pthread_create(&publishThread, &pAttrs, PublishThread,
+                                   (void *) &threadArg);
+         if (retc != 0)
+         {
+             gInitState &= ~MQTT_INIT_STATE;
+             UART_PRINT("MQTT thread create fail\n\r");
+             return;
+         }
+
+
+
+
+    /*enable interrupt for the GPIO 13 (SW3) and GPIO 22 (SW2).              */
+//    GPIO_setCallback(CONFIG_GPIO_BUTTON_0, pushButtonInterruptHandler2);
+//    GPIO_enableInt(CONFIG_GPIO_BUTTON_0); // SW2
+//
+//    GPIO_setCallback(CONFIG_GPIO_BUTTON_1, pushButtonInterruptHandler3);
+//    GPIO_enableInt(CONFIG_GPIO_BUTTON_1); // SW3
 
     gInitState &= ~MQTT_INIT_STATE;
 }

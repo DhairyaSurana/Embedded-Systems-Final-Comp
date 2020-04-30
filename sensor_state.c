@@ -1,5 +1,6 @@
 #include "sensor_state.h"
 #include "debug.h"
+#include "uart_term.h"
 
 
 int getSensorInfo(sensor_struct *curr_sensor, data_struct *new_sens_msg)
@@ -16,7 +17,8 @@ int getSensorInfo(sensor_struct *curr_sensor, data_struct *new_sens_msg)
     }
 
     else {
-
+         UART_PRINT("total: %d\r\n", curr_sensor->total);
+         UART_PRINT("count: %d\r\n", curr_sensor->count);
          curr_sensor->curTime += timeInc;
          sensorAvg = curr_sensor->total/curr_sensor->count;
 
