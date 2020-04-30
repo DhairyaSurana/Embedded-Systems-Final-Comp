@@ -50,10 +50,10 @@ static bool trigMode = true;
 static bool clearTrig = true;
 
 /*Sends to queue with the amount of time passed since the last callback */
-void sensorCallback();
+void sensorCallback(Timer_Handle timerHandle);
 
 /*edge triggered callback for sensor*/
-void trigCallback(Timer_Handle handle);
+void trigCallback(Timer_Handle timerHandle);
 
 /*Converts sensor reading value into distance in mm*/
 int convertToCM(uint32_t duration);

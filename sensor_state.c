@@ -8,8 +8,10 @@ int getSensorInfo(sensor_struct *curr_sensor, data_struct *new_sens_msg)
     /* This is where we get the value of the sensor. */
 
     timeVal_t timeInc = new_sens_msg->value.time_val;
+    //UART_PRINT("timeInc: %d\r\n", timeInc);
     sensorVal_t sensorVal = new_sens_msg->value.sensor_val;
-    int sensorAvg = 0;
+    //UART_PRINT("sensorVal: %d\r\n", new_sens_msg->value.sensor_val);
+    static int sensorAvg = 0;
 
     if (timeInc == 0) {
          curr_sensor->total += sensorVal;

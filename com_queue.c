@@ -38,10 +38,10 @@ int sendTimeMsgToQ(unsigned int timeVal) {
 
 int sendSensMsgToQ(int dist) {
 
-    UART_PRINT("Entered sendSensMsgToQ");
+    //UART_PRINT("Entered sendSensMsgToQ");
     data_struct data = {.type=sensor_data, .value.sensor_val=dist,
         .value.time_val=0};
-        return sendToQ(data);
+    return sendToQ(data);
 }
 
 data_struct readMsgFromQ(){

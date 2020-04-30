@@ -154,13 +154,18 @@ void initGPIO() {
 
     GPIO_init();
 
+    GPIO_setConfig(Board_GPIO0, GPIO_CFG_OUT_STD | GPIO_CFG_OUT_LOW);
     GPIO_setConfig(Board_GPIO1, GPIO_CFG_OUT_STD | GPIO_CFG_OUT_LOW);
     GPIO_setConfig(Board_GPIO2, GPIO_CFG_OUT_STD | GPIO_CFG_OUT_LOW);
     GPIO_setConfig(Board_GPIO3, GPIO_CFG_OUT_STD | GPIO_CFG_OUT_LOW);
     GPIO_setConfig(Board_GPIO4, GPIO_CFG_OUT_STD | GPIO_CFG_OUT_LOW);
-    GPIO_setConfig(Board_GPIO5, GPIO_CFG_OUT_STD | GPIO_CFG_OUT_LOW);
+   // GPIO_setConfig(Board_GPIO5, GPIO_CFG_OUT_STD | GPIO_CFG_OUT_LOW);
     GPIO_setConfig(Board_GPIO6, GPIO_CFG_OUT_STD | GPIO_CFG_OUT_LOW);
     GPIO_setConfig(Board_GPIO7, GPIO_CFG_OUT_STD | GPIO_CFG_OUT_LOW);
+
+    //GPIO_setConfig(Board_GPIO9_Echo, GPIO_CFG_IN_PU | GPIO_CFG_IN_INT_BOTH_EDGES);
+
+    GPIO_setConfig(Board_GPIO5, GPIO_CFG_IN_PU | GPIO_CFG_IN_INT_BOTH_EDGES);
 
     GPIO_write(Board_GPIO0, 0);
     GPIO_write(Board_GPIO1, 0);
@@ -186,7 +191,7 @@ void initUART(){
     uartParams.readEcho = UART_ECHO_OFF;
     uartParams.baudRate = 115200;
 
-    uart = UART_open(CONFIG_UART_0, &uartParams);
+    uart = UART_open(Board_UART0, &uartParams);
 //
 //    if (uart == NULL)   // Error checking for UART
 //        fatalError(MAIN_TASK_DLOC_FAILED_UART_OPEN);

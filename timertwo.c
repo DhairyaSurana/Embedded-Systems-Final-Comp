@@ -11,15 +11,17 @@ int getDistInCM(uint32_t duration) {
 
 
 /* Calculates distance and sends that data to the queue */
-// timerHandle is the interrupt
-void sensorCallback() {
+void sensorCallback(Timer_Handle timerHandle) {
 
     static uint32_t prev_count, curr_count;
     int dist;
     //mqtt_data_struct data;
 
-    if (GPIO_read(Board_GPIO9_Echo) == 1) {
-        prev_count = Timer_getCount(timer1);        // Change this to timerHandle
+//    if (GPIO_read(Board_GPIO9_Echo) == 1) {
+//        prev_count = Timer_getCount(timer1);        // Change this to timerHandle
+//    }
+    if (GPIO_read(Board_GPIO5) == 1) {
+           prev_count = Timer_getCount(timer1);        // Change this to timerHandle
     }
     else {
 
@@ -30,15 +32,15 @@ void sensorCallback() {
     }
 }
 
-void trigCallback(Timer_Handle handle){
+void trigCallback(Timer_Handle timerHandle){
 
     GPIO_write(Board_GPIO8_TRIG, 1);
     GPIO_write(Board_GPIO8_TRIG, 0);
 }
 
-void initTimerTwo() {
+void initTimerTwo(Timer_) {
 
-    UART_PRINT("Entered initTimerTwo\r\n");
+    //UART_PRINT("Entered initTimerTwo\r\n");
 
     Timer_Params params2;
     Timer_Params_init(&params2);
@@ -50,14 +52,14 @@ void initTimerTwo() {
 
     timer2 = Timer_open(Board_TIMER1, &params2);
 
-//    if (timer2 == NULL)
-//       UART_PRINT("Timer 2 is NULL\r\n");
-//
-//    if (Timer_start(timer2) == Timer_STATUS_ERROR)
-//        UART_PRINT("Timer 2 start error\r\n");
+    if (timer2 == NULL)
+       UART_PRINT("Timer 2 is NULL\r\n");
 
-    Timer_start(timer2);
-    UART_PRINT("Timer 2 exiting");
+    if (Timer_start(timer2) == Timer_STATUS_ERROR)
+        UART_PRINT("Timer 2 start error\r\n");
+
+    //Timer_start(timer2);
+    //UART_PRINT("Timer 2 exiting");
 }
 
 /* Assigns the sensorCallback function to GPIO 9*/
@@ -65,7 +67,9 @@ void initUSSensor() {
 
     //UART_PRINT("Entered initUSSensor\r\n");
 
-    GPIO_setCallback(Board_GPIO9_Echo, sensorCallback); // bind sensor callback to echo (GPIO 9) pin interrupt (Change-notice)
-    GPIO_enableInt(Board_GPIO9_Echo);   // enable echo interrupt
+   // GPIO_setCallback(Board_GPIO9_Echo, sensorCallback); // bind sensor callback to echo (GPIO 9) pin interrupt (Change-notice)
+    GPIO_setCallback(Board_GPIO5, sensorCallback);
+  //  GPIO_enableInt(Board_GPIO9_Echo);   // enable echo interrupt
+    GPIO_enableInt(Board_GPIO5);   // enable echo interrupt
 
 }

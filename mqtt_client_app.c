@@ -770,20 +770,24 @@ void * MqttClient(void *pvParameters)
             }
             //UART_PRINT("MQTT Client lib initialization succeeded\n\r");
         }
-        pthread_attr_init(&pAttrs);
-        priParam.sched_priority = 2;
-        retc = pthread_attr_setschedparam(&pAttrs, &priParam);
-        retc |= pthread_attr_setstacksize(&pAttrs, MQTTTHREADSIZE);
-        retc |= pthread_attr_setdetachstate(&pAttrs, PTHREAD_CREATE_DETACHED);
 
-        retc = pthread_create(&publishThread, &pAttrs, PublishThread,
-                              (void *) &threadArg);
-        if (retc != 0)
-        {
-            gInitState &= ~MQTT_INIT_STATE;
-            UART_PRINT("Publish thread create fail\n\r");
-            return (NULL);
-        }
+
+//        pthread_attr_init(&pAttrs);
+//        priParam.sched_priority = 2;
+//        retc = pthread_attr_setschedparam(&pAttrs, &priParam);
+//        retc |= pthread_attr_setstacksize(&pAttrs, MQTTTHREADSIZE);
+//        retc |= pthread_attr_setdetachstate(&pAttrs, PTHREAD_CREATE_DETACHED);
+//
+//        retc = pthread_create(&publishThread, &pAttrs, PublishThread,
+//                              (void *) &threadArg);
+//        if (retc != 0)
+//        {
+//            gInitState &= ~MQTT_INIT_STATE;
+//            UART_PRINT("Publish thread create fail\n\r");
+//            return (NULL);
+//        }
+
+
 //        retc = pthread_create(&subscribeThread, &pAttrs, SubscribeThread,
 //                              (void *) &threadArg);
 //        if (retc != 0)
@@ -793,8 +797,47 @@ void * MqttClient(void *pvParameters)
 //            return (NULL);
 //        }
 
-        return (NULL);
+        //long lRetVal = -1;
 
+          sensor_struct curr_sens_data;
+          sensorStructInit(&curr_sens_data);  // holds the current sensor data
+
+          int dist = 0;
+          char *msg = NULL;
+          static int pub = 1;
+
+          while (1){
+
+                 data_struct new_sens_msg = readMsgFromQ(); // reads message from queue (non-blocking)
+
+                 if (new_sens_msg.type != no_data) {
+
+                     dist = getSensorInfo(&curr_sens_data, &new_sens_msg);    // updates the current data with the new data from the message and prints out values
+                     //UART_PRINT("Distance: %d cm\r\n", dist);
+                     msg = createNewMsg(pub, 0, dist, getTime());
+
+                     lRetVal = MQTTClient_publish(
+                                                  gMqttClient, (char*) publish_topic,
+                                                  strlen((char*) publish_topic), (char*) msg,
+                                                  strlen((char*) msg),
+                                                  MQTT_QOS_0 | ((RETAIN_ENABLE) ? MQTT_PUBLISH_RETAIN : 0));
+
+                      if(lRetVal >= 0) {
+                          UART_PRINT("Published to MQTT Successfully: %s\r\n", msg);
+                          pub++;
+                      }
+                      else {
+                          UART_PRINT("Error: Not able to publish to MQTT\r\n");
+                      }
+                 }
+
+                 //char *msg = createNewMsg(pub, 0, dist, getTime());
+
+
+
+          }
+
+        return (NULL);
 
 }
 
@@ -849,49 +892,49 @@ void * PublishThread(void *vParameters) {
 
     int dist = 0;
     static int pub = 1;
+
     while (1){
 
            data_struct new_sens_msg = readMsgFromQ(); // reads message from queue (non-blocking)
 
            if (new_sens_msg.type != no_data) {
                dist = getSensorInfo(&curr_sens_data, &new_sens_msg);    // updates the current data with the new data from the message and prints out values
-               //UART_PRINT("Distance: %d cm\r\n", dist);
+               UART_PRINT("Distance: %d cm\r\n", dist);
            }
 
-           char *msg = createNewMsg(pub, 0, dist, getTime());
-
-           lRetVal = MQTTClient_publish(
-                           gMqttClient, (char*) publish_topic,
-                           strlen((char*) publish_topic), (char*) msg,
-                           strlen((char*) msg),
-                           MQTT_QOS_0 | ((RETAIN_ENABLE) ? MQTT_PUBLISH_RETAIN : 0));
-
-           if(lRetVal >= 0) {
-               UART_PRINT("Published to MQTT Successfully: %s\r\n", msg);
-               pub++;
-           }
-           else {
-               UART_PRINT("Error: Not able to publish to MQTT\r\n");
-           }
+//           char *msg = createNewMsg(pub, 0, dist, getTime());
+//
+//
+//           lRetVal = MQTTClient_publish(
+//                           gMqttClient, (char*) publish_topic,
+//                           strlen((char*) publish_topic), (char*) msg,
+//                           strlen((char*) msg),
+//                           MQTT_QOS_0 | ((RETAIN_ENABLE) ? MQTT_PUBLISH_RETAIN : 0));
+//
+//           if(lRetVal >= 0) {
+//               UART_PRINT("Published to MQTT Successfully: %s\r\n", msg);
+//               pub++;
+//           }
+//           else {
+//               UART_PRINT("Error: Not able to publish to MQTT\r\n");
+//           }
     }
 }
 
 void * obstacleDetectionTask(void *pvParameters) {
 
-    //long lRetVal = -1;
+    initGPIO();
+    initUART();
 
-    //initUART();
-    //initGPIO();
     initMsgQueue();
     initUSSensor(); // Sends message to queue via callback
-    //initSensor();
 
     Timer_init();
     initTimerOne();
     initTimerTwo();
 
-//    sensor_struct curr_sens_data;
-//    sensorStructInit(&curr_sens_data);
+    //while(1) {}
+    return(NULL);
 
 }
 
@@ -1025,6 +1068,15 @@ void Mqtt_start()
         return;
     }
 
+    retc = pthread_create(&obstacleDetectionThread, &pAttrs, obstacleDetectionTask,
+                                 (void *) &threadArg);
+           if (retc != 0)
+           {
+               gInitState &= ~MQTT_INIT_STATE;
+               UART_PRINT("MQTT thread create fail\n\r");
+               return;
+           }
+
     retc = pthread_create(&mqttThread, &pAttrs, MqttClient, (void *) &threadArg);
     if(retc != 0)
     {
@@ -1033,23 +1085,16 @@ void Mqtt_start()
         return;
     }
 
-    retc = pthread_create(&obstacleDetectionThread, &pAttrs, obstacleDetectionTask,
-                                (void *) &threadArg);
-          if (retc != 0)
-          {
-              gInitState &= ~MQTT_INIT_STATE;
-              UART_PRINT("MQTT thread create fail\n\r");
-              return;
-          }
 
-         retc = pthread_create(&publishThread, &pAttrs, PublishThread,
-                                   (void *) &threadArg);
-         if (retc != 0)
-         {
-             gInitState &= ~MQTT_INIT_STATE;
-             UART_PRINT("MQTT thread create fail\n\r");
-             return;
-         }
+
+//         retc = pthread_create(&publishThread, &pAttrs, PublishThread,
+//                                   (void *) &threadArg);
+//         if (retc != 0)
+//         {
+//             gInitState &= ~MQTT_INIT_STATE;
+//             UART_PRINT("MQTT thread create fail\n\r");
+//             return;
+//         }
 
 
 

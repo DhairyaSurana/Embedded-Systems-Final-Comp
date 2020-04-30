@@ -29,7 +29,6 @@ var GPIO12 = GPIO.addInstance();
 var GPIO13 = GPIO.addInstance();
 var GPIO14 = GPIO.addInstance();
 var GPIO15 = GPIO.addInstance();
-var GPIO16 = GPIO.addInstance();
 var SPI = scripting.addModule("/ti/drivers/SPI");
 var SPI1 = SPI.addInstance();
 // Name - The C/C++ identifier used in applications as the index parameter passed to ADC runtime APIs
@@ -79,8 +78,8 @@ GPIO3.gpioPin.$assign = "boosterpack.5"; // P61
 GPIO4.$name = "Board_GPIO3";
 // Mode - Select the GPIO mode
 GPIO4.mode = "Output";
-// Assign pin
-GPIO4.gpioPin.$assign = "boosterpack.8"; // P62
+// Assign pin (ignoring conflicts)
+GPIO4.gpioPin.$assignAllowConflicts = "boosterpack.8"; // P62
 // Name - The C/C++ identifier used in applications as the index parameter passed to GPIO runtime APIs
 GPIO5.$name = "Board_GPIO4";
 // Mode - Select the GPIO mode
@@ -105,10 +104,10 @@ GPIO8.$name = "Board_GPIO7";
 GPIO8.mode = "Output";
 // Assign pin
 GPIO8.gpioPin.$assign = "boosterpack.14"; // P06
-// Name - The C/C++ identifier used in applications as the index parameter passed to UART runtime APIs
-UART1.$name = "CONFIG_UART_0";
 // Use Hardware - Select the hardware to use, or 'None' to use available header pins
 UART1.$hardware = system.deviceData.board.components.XDS110UART;
+// Name - The C/C++ identifier used in applications as the index parameter passed to UART runtime APIs
+UART1.$name = "Board_UART0";
 // Name
 UART1.uart.$name = "MyUART1";
 // Mode - Select the GPIO mode
@@ -123,34 +122,32 @@ GPIO10.interruptTrigger = "Both Edges";
 GPIO10.mode = "Dynamic";
 // Name - The C/C++ identifier used in applications as the index parameter passed to GPIO runtime APIs
 GPIO10.$name = "Board_GPIO9_Echo";
-// Mode - Select the GPIO mode
-GPIO11.mode = "Dynamic";
-// Name - The C/C++ identifier used in applications as the index parameter passed to GPIO runtime APIs
-GPIO11.$name = "Board_GPIO10_RightEcho";
-// Name - The C/C++ identifier used in applications as the index parameter passed to GPIO runtime APIs
-GPIO12.$name = "CONFIG_GPIO_BUTTON_0";
-// Use Hardware - Select the hardware to use, or 'None' to use available header pins
-GPIO12.$hardware = system.deviceData.board.components.SW2;
-// Name - The C/C++ identifier used in applications as the index parameter passed to GPIO runtime APIs
-GPIO13.$name = "CONFIG_GPIO_BUTTON_1";
-// Use Hardware - Select the hardware to use, or 'None' to use available header pins
-GPIO13.$hardware = system.deviceData.board.components.SW3;
-// Name - The C/C++ identifier used in applications as the index parameter passed to GPIO runtime APIs
-GPIO14.$name = "CONFIG_GPIO_LED_0";
-// Use Hardware - Select the hardware to use, or 'None' to use available header pins
-GPIO14.$hardware = system.deviceData.board.components.LED_RED;
-// Output Strength - Specifies the output strength
-GPIO14.outputStrength = "High";
 // Assign pin
-GPIO14.gpioPin.$assign = "boosterpack.29"; // P64
+GPIO10.gpioPin.$assign = "boosterpack.13"; // P21
 // Name - The C/C++ identifier used in applications as the index parameter passed to GPIO runtime APIs
-GPIO15.$name = "CONFIG_GPIO_LED_1";
+GPIO11.$name = "CONFIG_GPIO_BUTTON_0";
 // Use Hardware - Select the hardware to use, or 'None' to use available header pins
-GPIO15.$hardware = system.deviceData.board.components.LED_YELLOW;
+GPIO11.$hardware = system.deviceData.board.components.SW2;
 // Name - The C/C++ identifier used in applications as the index parameter passed to GPIO runtime APIs
-GPIO16.$name = "CONFIG_GPIO_LED_2";
+GPIO12.$name = "CONFIG_GPIO_BUTTON_1";
 // Use Hardware - Select the hardware to use, or 'None' to use available header pins
-GPIO16.$hardware = system.deviceData.board.components.LED_GREEN;
+GPIO12.$hardware = system.deviceData.board.components.SW3;
+// Name - The C/C++ identifier used in applications as the index parameter passed to GPIO runtime APIs
+GPIO13.$name = "CONFIG_GPIO_LED_0";
+// Use Hardware - Select the hardware to use, or 'None' to use available header pins
+GPIO13.$hardware = system.deviceData.board.components.LED_RED;
+// Output Strength - Specifies the output strength
+GPIO13.outputStrength = "High";
+// Assign pin
+GPIO13.gpioPin.$assign = "boosterpack.29"; // P64
+// Name - The C/C++ identifier used in applications as the index parameter passed to GPIO runtime APIs
+GPIO14.$name = "CONFIG_GPIO_LED_1";
+// Use Hardware - Select the hardware to use, or 'None' to use available header pins
+GPIO14.$hardware = system.deviceData.board.components.LED_YELLOW;
+// Name - The C/C++ identifier used in applications as the index parameter passed to GPIO runtime APIs
+GPIO15.$name = "CONFIG_GPIO_LED_2";
+// Use Hardware - Select the hardware to use, or 'None' to use available header pins
+GPIO15.$hardware = system.deviceData.board.components.LED_GREEN;
 var DMA = scripting.addModule("/ti/drivers/DMA", {}, false);
 // Name - The C/C++ identifier used in applications as the index parameter passed to SPI runtime APIs
 SPI1.$name = "CONFIG_SPI_0";
@@ -158,6 +155,8 @@ SPI1.$name = "CONFIG_SPI_0";
 SPI1.mode = "Four Pin SS Active Low";
 // Name
 SPI1.spi.$name = "MySPI1";
+// Assign pin
+SPI1.spi.misoPin.$assign = "boosterpack.28"; // P53
 // Suggest solution
 ADC1.adc.$suggestSolution = "ADC0";
 // Suggest solution
@@ -167,23 +166,17 @@ UART1.uart.txPin.$suggestSolution = "55";
 // Suggest solution
 UART1.uart.rxPin.$suggestSolution = "57";
 // Suggest solution
-GPIO10.gpioPin.$suggestSolution = "21";
+GPIO11.gpioPin.$suggestSolution = "4";
 // Suggest solution
-GPIO11.gpioPin.$suggestSolution = "59";
+GPIO12.gpioPin.$suggestSolution = "15";
 // Suggest solution
-GPIO12.gpioPin.$suggestSolution = "4";
+GPIO14.gpioPin.$suggestSolution = "1";
 // Suggest solution
-GPIO13.gpioPin.$suggestSolution = "15";
-// Suggest solution
-GPIO15.gpioPin.$suggestSolution = "1";
-// Suggest solution
-GPIO16.gpioPin.$suggestSolution = "2";
+GPIO15.gpioPin.$suggestSolution = "2";
 // Suggest solution
 SPI1.spi.$suggestSolution = "SPI0";
 // Suggest solution
 SPI1.spi.sclkPin.$suggestSolution = "45";
-// Suggest solution
-SPI1.spi.misoPin.$suggestSolution = "53";
 // Suggest solution
 SPI1.spi.mosiPin.$suggestSolution = "7";
 // Suggest solution
