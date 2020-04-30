@@ -50,7 +50,7 @@ static bool trigMode = true;
 static bool clearTrig = true;
 
 /*Sends to queue with the amount of time passed since the last callback */
-void sensorCallback(Timer_Handle handle);
+void sensorCallback();
 
 /*edge triggered callback for sensor*/
 void trigCallback(Timer_Handle handle);

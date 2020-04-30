@@ -848,15 +848,17 @@ void * PublishThread(void *vParameters) {
     sensorStructInit(&curr_sens_data);  // holds the current sensor data
 
     int dist = 0;
+    static int pub = 1;
     while (1){
 
            data_struct new_sens_msg = readMsgFromQ(); // reads message from queue (non-blocking)
 
            if (new_sens_msg.type != no_data) {
                dist = getSensorInfo(&curr_sens_data, &new_sens_msg);    // updates the current data with the new data from the message and prints out values
+               //UART_PRINT("Distance: %d cm\r\n", dist);
            }
 
-           char *msg = createNewMsg(0, 0, dist, getTime());
+           char *msg = createNewMsg(pub, 0, dist, getTime());
 
            lRetVal = MQTTClient_publish(
                            gMqttClient, (char*) publish_topic,
@@ -866,6 +868,7 @@ void * PublishThread(void *vParameters) {
 
            if(lRetVal >= 0) {
                UART_PRINT("Published to MQTT Successfully: %s\r\n", msg);
+               pub++;
            }
            else {
                UART_PRINT("Error: Not able to publish to MQTT\r\n");
@@ -878,17 +881,17 @@ void * obstacleDetectionTask(void *pvParameters) {
     //long lRetVal = -1;
 
     //initUART();
-
+    //initGPIO();
     initMsgQueue();
-    initUSSensor();
+    initUSSensor(); // Sends message to queue via callback
     //initSensor();
 
     Timer_init();
     initTimerOne();
     initTimerTwo();
 
-    sensor_struct curr_sens_data;
-    sensorStructInit(&curr_sens_data);
+//    sensor_struct curr_sens_data;
+//    sensorStructInit(&curr_sens_data);
 
 }
 
