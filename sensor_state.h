@@ -1,6 +1,6 @@
 /* State Machine Enumeration Structure*/
 
-#include "sensor_queue.h"
+#include "com_queue.h"
 
 /* State Machine Structure*/
 typedef int timeVal_t;
@@ -12,5 +12,5 @@ sensor_struct;
 
 void sensorStructInit(sensor_struct *state);
 
-void printSensorInfo(sensor_struct *curr_sensor, data_struct *new_sens_msg);
+int getSensorInfo(sensor_struct *curr_sensor, data_struct *new_sens_msg);
     

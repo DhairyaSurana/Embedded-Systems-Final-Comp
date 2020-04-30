@@ -48,7 +48,7 @@
 #define DLOC_OVER127_ERROR              0x68
 
 
-UART_Handle uart_Debug;
+UART_Handle uart;
 /*
 void Init_Debug();
 void dbgUARTVal(unsigned char outVal);

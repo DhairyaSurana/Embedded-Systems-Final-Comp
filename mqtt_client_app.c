@@ -252,6 +252,8 @@ pthread_t mqttThread = (pthread_t) NULL;
 pthread_t appThread = (pthread_t) NULL;
 timer_t g_timer;
 
+pthread_t publishThread = (pthread_t) NULL;
+
 /* Printing new line                                                         */
 char lineBreak[] = "\n\r";
 
@@ -563,6 +565,22 @@ static void runTestCases() {
    d = getJSONData(inval_id_json);
    printDevData(d);
 
+
+   UART_PRINT("CREATING JSON: ");
+
+   cJSON *msg = cJSON_CreateObject();
+
+   cJSON_AddItemToObject(msg, "id", cJSON_CreateString("ultra"));
+   cJSON_AddItemToObject(msg, "pub", cJSON_CreateNumber(0));
+   cJSON_AddItemToObject(msg, "rec", cJSON_CreateNumber(0));
+   cJSON_AddItemToObject(msg, "distance", cJSON_CreateNumber(0));
+   cJSON_AddItemToObject(msg, "time", cJSON_CreateNumber(0));
+
+   char *msg_str = cJSON_Print(msg);
+   UART_PRINT(msg_str);
+   UART_PRINT("\r\n");
+   cJSON_Delete(msg);
+
    UART_PRINT("=======================================================================================================================================\r\n\r\n");
 
 }
@@ -620,185 +638,312 @@ int getTime() {
 }
 void * MqttClient(void *pvParameters)
 {
-    dbgOutputLoc(DBG_MqttClient_START);
-    struct msgQueue queueElemRecv;
+      UART_PRINT("Entered MqttClient\r\n");
+//    dbgOutputLoc(DBG_MqttClient_START);
+//    struct msgQueue queueElemRecv;
+//    long lRetVal = -1;
+//    char *tmpBuff;
+//
+//    /*Initializing Client and Subscribing to the Broker.                     */
+//    if(gApConnectionState >= 0)
+//    {
+//        lRetVal = MqttClient_start();
+//        if(lRetVal == -1)
+//        {
+//            UART_PRINT("MQTT Client lib initialization failed\n\r");
+//            pthread_exit(0);
+//            return(NULL);
+//        }
+//    }
+//
+//    /*handling the signals from various callbacks including the push button  */
+//    /*prompting the client to publish a msg on PUB_TOPIC OR msg received by  */
+//    /*the server on enrolled topic(for which the on-board client ha enrolled)*/
+//    /*from a local client(will be published to the remote broker by the      */
+//    /*client) OR msg received by the client from the remote broker (need to  */
+//    /*be sent to the server to see if any local client has subscribed on the */
+//    /*same topic).                                                           */
+//
+//    static int pub_count = 1;
+//
+//    for(;; )
+//    {
+//        dbgOutputLoc(DBG_MqttClient_WAITFORSIG);
+//        /*waiting for signals                                                */
+//        mq_receive(g_PBQueue, (char*) &queueElemRecv, sizeof(struct msgQueue),
+//                   NULL);
+//
+//        switch(queueElemRecv.event)
+//        {
+//        case PUBLISH_PUSH_BUTTON_PRESSED:
+//            dbgOutputLoc(DBG_MqttClient_PUBLISH);
+//
+//
+//            char *new_msg = createNewMsg(pub_count, 0, 0, getTime());
+//            /*send publish message                                       */
+//            lRetVal =
+//                MQTTClient_publish(gMqttClient, (char*) publish_topic, strlen(
+//                                      (char*)publish_topic),
+//                                  new_msg,                                              // Originally (char*) publish_data
+//                                  strlen(new_msg), MQTT_QOS_2 |            // Originally strlen((char*) publish_data), MQTT_QOS_2 |
+//                                  ((RETAIN_ENABLE) ? MQTT_PUBLISH_RETAIN : 0));
+//
+//            UART_PRINT("\n\r CC3200 Publishes the following message \n\r");
+//            UART_PRINT("Topic: %s\n\r", publish_topic);
+//            UART_PRINT("Data: %s\n\r", new_msg);                                   // UART_PRINT("Data: %s\n\r", publish_data)
+//
+//            pub_count++;
+//
+//            /* Clear and enable again the SW2 interrupt */
+//            GPIO_clearInt(CONFIG_GPIO_BUTTON_0);     // SW2
+//            GPIO_enableInt(CONFIG_GPIO_BUTTON_0);     // SW2
+//
+//            break;
+//
+//        /*msg received by client from remote broker (on a topic      */
+//        /*subscribed by local client)                                */
+//        case MSG_RECV_BY_CLIENT:
+//            dbgOutputLoc(DBG_MqttClient_RECIEVE);
+//            tmpBuff = (char *) ((char *) queueElemRecv.msgPtr + 12);
+//            if(strncmp
+//                (tmpBuff, SUBSCRIPTION_TOPIC1, queueElemRecv.topLen) == 0)
+//            {
+//                GPIO_toggle(CONFIG_GPIO_LED_0);
+//            }
+//            else if(strncmp(tmpBuff, SUBSCRIPTION_TOPIC2,
+//                            queueElemRecv.topLen) == 0)
+//            {
+//                GPIO_toggle(CONFIG_GPIO_LED_1);
+//            }
+//            else if(strncmp(tmpBuff, SUBSCRIPTION_TOPIC3,
+//                            queueElemRecv.topLen) == 0)
+//            {
+//                GPIO_toggle(CONFIG_GPIO_LED_2);
+//            }
+//
+//            free(queueElemRecv.msgPtr);
+//            break;
+//
+//        /*On-board client disconnected from remote broker, only      */
+//        /*local MQTT network will work                               */
+//        case LOCAL_CLIENT_DISCONNECTION:
+//            UART_PRINT("\n\rOn-board Client Disconnected\n\r\r\n");
+//            gUiConnFlag = 0;
+//            break;
+//
+//        /*Push button for full restart check                         */
+//        case DISC_PUSH_BUTTON_PRESSED:
+//            gResetApplication = true;
+//            break;
+//
+//        case THREAD_TERMINATE_REQ:
+//            gUiConnFlag = 0;
+//            pthread_exit(0);
+//            return(NULL);
+//        default:
+//
+//            gResetApplication = true;
+//            gUiConnFlag = 0;
+//            pthread_exit(0);
+//            return(NULL);
+//        }
+//
+//
+//    }
+
     long lRetVal = -1;
-    char *tmpBuff;
+        int32_t threadArg = 100;
+        pthread_attr_t pAttrs;
+        struct sched_param priParam;
+        int32_t retc = 0;
 
-    /*Initializing Client and Subscribing to the Broker.                     */
-    if(gApConnectionState >= 0)
-    {
-        lRetVal = MqttClient_start();
-        if(lRetVal == -1)
+        /*Initializing Client and Subscribing to the Broker.                     */
+        if (gApConnectionState >= 0)
         {
-            UART_PRINT("MQTT Client lib initialization failed\n\r");
-            pthread_exit(0);
-            return(NULL);
+            lRetVal = MqttClient_start();
+            if (lRetVal == -1)
+            {
+                UART_PRINT("MQTT Client lib initialization failed\n\r");
+                pthread_exit(0);
+                return (NULL);
+            }
+            //UART_PRINT("MQTT Client lib initialization succeeded\n\r");
         }
-    }
+        pthread_attr_init(&pAttrs);
+        priParam.sched_priority = 2;
+        retc = pthread_attr_setschedparam(&pAttrs, &priParam);
+        retc |= pthread_attr_setstacksize(&pAttrs, MQTTTHREADSIZE);
+        retc |= pthread_attr_setdetachstate(&pAttrs, PTHREAD_CREATE_DETACHED);
 
-    /*handling the signals from various callbacks including the push button  */
-    /*prompting the client to publish a msg on PUB_TOPIC OR msg received by  */
-    /*the server on enrolled topic(for which the on-board client ha enrolled)*/
-    /*from a local client(will be published to the remote broker by the      */
-    /*client) OR msg received by the client from the remote broker (need to  */
-    /*be sent to the server to see if any local client has subscribed on the */
-    /*same topic).                                                           */
-
-    static int pub_count = 1;
-
-    for(;; )
-    {
-        dbgOutputLoc(DBG_MqttClient_WAITFORSIG);
-        /*waiting for signals                                                */
-        mq_receive(g_PBQueue, (char*) &queueElemRecv, sizeof(struct msgQueue),
-                   NULL);
-
-        switch(queueElemRecv.event)
+        retc = pthread_create(&publishThread, &pAttrs, PublishThread,
+                              (void *) &threadArg);
+        if (retc != 0)
         {
-        case PUBLISH_PUSH_BUTTON_PRESSED:
-            dbgOutputLoc(DBG_MqttClient_PUBLISH);
-
-
-            char *new_msg = createNewMsg(pub_count, 0, 0, getTime());
-            /*send publish message                                       */
-            lRetVal =
-                MQTTClient_publish(gMqttClient, (char*) publish_topic, strlen(
-                                      (char*)publish_topic),
-                                  new_msg,                                              // Originally (char*) publish_data
-                                  strlen(new_msg), MQTT_QOS_2 |            // Originally strlen((char*) publish_data), MQTT_QOS_2 |
-                                  ((RETAIN_ENABLE) ? MQTT_PUBLISH_RETAIN : 0));
-
-            UART_PRINT("\n\r CC3200 Publishes the following message \n\r");
-            UART_PRINT("Topic: %s\n\r", publish_topic);
-            UART_PRINT("Data: %s\n\r", new_msg);                                   // UART_PRINT("Data: %s\n\r", publish_data)
-
-            pub_count++;
-
-            /* Clear and enable again the SW2 interrupt */
-            GPIO_clearInt(CONFIG_GPIO_BUTTON_0);     // SW2
-            GPIO_enableInt(CONFIG_GPIO_BUTTON_0);     // SW2
-
-            break;
-
-        /*msg received by client from remote broker (on a topic      */
-        /*subscribed by local client)                                */
-        case MSG_RECV_BY_CLIENT:
-            dbgOutputLoc(DBG_MqttClient_RECIEVE);
-            tmpBuff = (char *) ((char *) queueElemRecv.msgPtr + 12);
-            if(strncmp
-                (tmpBuff, SUBSCRIPTION_TOPIC1, queueElemRecv.topLen) == 0)
-            {
-                GPIO_toggle(CONFIG_GPIO_LED_0);
-            }
-            else if(strncmp(tmpBuff, SUBSCRIPTION_TOPIC2,
-                            queueElemRecv.topLen) == 0)
-            {
-                GPIO_toggle(CONFIG_GPIO_LED_1);
-            }
-            else if(strncmp(tmpBuff, SUBSCRIPTION_TOPIC3,
-                            queueElemRecv.topLen) == 0)
-            {
-                GPIO_toggle(CONFIG_GPIO_LED_2);
-            }
-
-            free(queueElemRecv.msgPtr);
-            break;
-
-        /*On-board client disconnected from remote broker, only      */
-        /*local MQTT network will work                               */
-        case LOCAL_CLIENT_DISCONNECTION:
-            UART_PRINT("\n\rOn-board Client Disconnected\n\r\r\n");
-            gUiConnFlag = 0;
-            break;
-
-        /*Push button for full restart check                         */
-        case DISC_PUSH_BUTTON_PRESSED:
-            gResetApplication = true;
-            break;
-
-        case THREAD_TERMINATE_REQ:
-            gUiConnFlag = 0;
-            pthread_exit(0);
-            return(NULL);
-        default:
-
-            gResetApplication = true;
-            gUiConnFlag = 0;
-            pthread_exit(0);
-            return(NULL);
+            gInitState &= ~MQTT_INIT_STATE;
+            UART_PRINT("Publish thread create fail\n\r");
+            return (NULL);
         }
+//        retc = pthread_create(&subscribeThread, &pAttrs, SubscribeThread,
+//                              (void *) &threadArg);
+//        if (retc != 0)
+//        {
+//            gInitState &= ~MQTT_INIT_STATE;
+//            UART_PRINT("Subscribe thread create fail\n\r");
+//            return (NULL);
+//        }
 
-
-    }
+        return (NULL);
 
 
 }
 
 
 
-void timerThreeCallback(Timer_Handle timerHandle){
+//void timerThreeCallback(Timer_Handle timerHandle){
+//
+//    UART_PRINT("Entered timer callback\r\n");
+//
+//    mqtt_data_struct data;
+//
+//        data.type = message_data;
+////        data.value.message = createNewMsg();
+////        data.value.message_num_receive = 0;
+////        data.value.message_num_sent++;
+////        data.value.source = "1";
+//        data.message = createNewMsg(0, 0, 0, 0);
+//
+//    sendStatisticsToPublishQueue(data);
+//}
 
-    static mqtt_data_struct data;
-
-        data.type = message_data;
-//        data.value.message = createNewMsg();
-//        data.value.message_num_receive = 0;
-//        data.value.message_num_sent++;
-//        data.value.source = "1";
-        data.message = createNewMsg(0, 0, 0, 0);
-
-
-    sendStatisticsToPublishQueue(data);
-}
-
+//void sensCallback(Timer_Handle handle) {
+//
+//    static uint32_t prev_count, curr_count;
+//    int dist;
+//    //mqtt_data_struct data;
+//
+//    if (GPIO_read(Board_GPIO9_Echo) == 1) {
+//        prev_count = Timer_getCount(timer1);        // Change this to timerHandle
+//    }
+//    else {
+//
+//        curr_count = Timer_getCount(timer1);
+//        dist = getDistInCM(curr_count - prev_count); // Calculates distance
+//
+//        sendSensMsgToQ(dist);
+//    }
+//}
+//
+//void initSensor() {
+//
+//    GPIO_setCallback(Board_GPIO9_Echo, sensCallback); // bind sensor callback to echo (GPIO 9) pin interrupt (Change-notice)
+//    GPIO_enableInt(Board_GPIO9_Echo);   // enable echo interrupt
+//}
 
 void * PublishThread(void *pvParameters) {
 
     long lRetVal = -1;
 
+    //initUART();
+
+    initMsgQueue();
+    initUSSensor();
+    //initSensor();
+
     Timer_init();
-    Timer_Handle timer1;
+    initTimerOne();
+    initTimerTwo();
 
-    Timer_Params params1;
-    Timer_Params_init(&params1);
+    //char output[256];
 
-    /* Initalizing params */
-    params1.period = 100000;
-    params1.periodUnits = Timer_PERIOD_US;
-    params1.timerMode = Timer_CONTINUOUS_CALLBACK;
-    params1.timerCallback = timerThreeCallback;
+    sensor_struct curr_sens_data;
+    sensorStructInit(&curr_sens_data);
 
-    /*Opening Timer*/
-    timer1 = Timer_open(Board_TIMER3, &params1);
-
-    if (timer1 == NULL)
-        fatalError(DLOC_TIMERONE_FAILED_INIT);
-
-    if(Timer_start(timer1) == Timer_STATUS_ERROR)
-        fatalError(DLOC_TIMERONE_FAILED_START);
-
-    //initTimerOne();
-
-    mqtt_data_struct data;
-    char output[256];
-
+    int dist = 0;
     while (1) {
 
-        data = readStatisticsFromPublishQueue();
-        //sprintf(output, "{\"source\": \"%s\"}", data.value.source);
+       // UART_PRINT("Entered loop\r\n");
+        data_struct new_sens_msg = readMsgFromQ();
 
-        UART_PRINT("Published the following message: ");
-        UART_PRINT(data.message);
-        UART_PRINT("/r/n");
+        if (new_sens_msg.type != no_data) {
+           // UART_PRINT("Entered asdf\r\n");
+            dist = getSensorInfo(&curr_sens_data, &new_sens_msg);
+           // UART_PRINT("Distance: %d cm\r\n", dist);
+        }
+
+        char *msg = createNewMsg(0, 0, dist, getTime());
 
         lRetVal = MQTTClient_publish(
-                gMqttClient, (char*) publish_topic,
-                strlen((char*) publish_topic), (char*) output,
-                strlen((char*) output),
-                MQTT_QOS_0 | ((RETAIN_ENABLE) ? MQTT_PUBLISH_RETAIN : 0));
+                        gMqttClient, (char*) publish_topic,
+                        strlen((char*) publish_topic), (char*) msg,
+                        strlen((char*) msg),
+                        MQTT_QOS_0 | ((RETAIN_ENABLE) ? MQTT_PUBLISH_RETAIN : 0));
+
+        if(lRetVal >= 0) {
+            UART_PRINT("Published to MQTT Successfully: %s\r\n", msg);
+        }
+        else {
+            UART_PRINT("Error: Not able to publish to MQTT\r\n");
+        }
 
     }
+
+    //    long lRetVal = -1;
+    //    UART_PRINT("Entered PublishThread\r\n");
+    //
+    //    Timer_init();
+    //    Timer_Handle timer1;
+    //    UART_PRINT("Initialized timer\r\n");
+    //
+    //    Timer_Params params1;
+    //    Timer_Params_init(&params1);
+    //
+    //
+    //    /* Initalizing params */
+    //    params1.period = 100000;
+    //    params1.periodUnits = Timer_PERIOD_US;
+    //    params1.timerMode = Timer_CONTINUOUS_CALLBACK;
+    //    params1.timerCallback = timerThreeCallback;
+    //    UART_PRINT("Initialized timer params\r\n");
+    //
+    //    /*Opening Timer*/
+    //    timer1 = Timer_open(Board_TIMER3, &params1);
+    //
+    //    if (timer1 == NULL) {
+    //        UART_PRINT("Error in opening timer");
+    //    }
+    //        //fatalError(DLOC_TIMERONE_FAILED_INIT);
+    //
+    //    if(Timer_start(timer1) == Timer_STATUS_ERROR) {
+    //        UART_PRINT("Error in starting timer");
+    //    }
+    //        //fatalError(DLOC_TIMERONE_FAILED_START);
+    //
+    //    //Timer_start(timer1);
+    //    UART_PRINT("Started Timer successfully\r\n");
+    //
+    //    //initTimerOne();
+    //
+    //    mqtt_data_struct data;
+    //    char output[256];
+    //
+    //    while (1) {
+    //
+    //        UART_PRINT("Entered loop\r\n");
+    //        data = readStatisticsFromPublishQueue();
+    //        //sprintf(output, "{\"source\": \"%s\"}", data.value.source);
+    //
+    //        UART_PRINT("Published the following message: ");
+    //        UART_PRINT(data.message);
+    //        UART_PRINT("/r/n");
+    //
+    //        lRetVal = MQTTClient_publish(
+    //                gMqttClient, (char*) publish_topic,
+    //                strlen((char*) publish_topic), (char*) output,
+    //                strlen((char*) output),
+    //                MQTT_QOS_0 | ((RETAIN_ENABLE) ? MQTT_PUBLISH_RETAIN : 0));
+    //
+    //    }
+
 }
 
 

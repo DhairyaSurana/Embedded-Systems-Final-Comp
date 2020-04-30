@@ -74,6 +74,8 @@ extern mqd_t g_PBQueue;
 extern char *topic[];
 struct client_info client_info_table[MAX_CONNECTION];
 
+static char pubBuff[512];
+
 //*****************************************************************************
 //                 Queue external function
 //*****************************************************************************
@@ -175,10 +177,10 @@ void MqttClientCallback(int32_t event,
 
         struct publishMsgHeader msgHead;
 
-        mqtt_data_struct queueElem;
+        data_struct queueElem;
         //char *queueElem;
 
-        char *pubBuff = NULL;
+        //char *pubBuff = NULL;
 
         topicOffset = sizeof(struct publishMsgHeader);
         payloadOffset = sizeof(struct publishMsgHeader) +
@@ -232,8 +234,8 @@ void MqttClientCallback(int32_t event,
 //        queueElem.msgPtr = pubBuff;
 //        queueElem.topLen = recvMetaData->topLen;
         queueElem.type = message_data;
-        //queueElem.value.message = (pubBuff + payloadOffset);
-        queueElem.message = (pubBuff + payloadOffset);
+        queueElem.value.message = (pubBuff + payloadOffset);
+        //queueElem.message = (pubBuff + payloadOffset);
 
         /* signal to the main task                                        */
         if(MQTT_SendMsgToQueue(&queueElem))

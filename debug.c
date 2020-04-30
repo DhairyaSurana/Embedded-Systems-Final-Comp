@@ -107,15 +107,15 @@ void dbgOutputLoc(unsigned int outLoc)
     int_to_bin_digit(outLoc, 8, binLoc);
 
 
-    GPIO_write(CONFIG_GPIO_0, binLoc[7]);
-    GPIO_write(CONFIG_GPIO_1, binLoc[6]);
-    GPIO_write(CONFIG_GPIO_2, binLoc[5]);
-    GPIO_write(CONFIG_GPIO_3, binLoc[4]);
-    GPIO_write(CONFIG_GPIO_4, binLoc[3]);
-    GPIO_write(CONFIG_GPIO_5, binLoc[2]);
-    GPIO_write(CONFIG_GPIO_6, binLoc[1]);
-    //GPIO_write(CONFIG_GPIO_7, binLoc[0]);
-    GPIO_toggle(CONFIG_GPIO_7);
+    GPIO_write(Board_GPIO0, binLoc[7]);
+    GPIO_write(Board_GPIO1, binLoc[6]);
+    GPIO_write(Board_GPIO2, binLoc[5]);
+    GPIO_write(Board_GPIO3, binLoc[4]);
+    GPIO_write(Board_GPIO4, binLoc[3]);
+    GPIO_write(Board_GPIO5, binLoc[2]);
+    GPIO_write(Board_GPIO6, binLoc[1]);
+    //GPIO_write(Board_GPIO7, binLoc[0]);
+    GPIO_toggle(Board_GPIO7);
 
 
 
@@ -138,15 +138,15 @@ void dbgOutputLoc(unsigned int outLoc)
 
 void dbgTestOut(){
 
-    GPIO_write(CONFIG_GPIO_0, 1);
-    GPIO_write(CONFIG_GPIO_1, 1);
-    GPIO_write(CONFIG_GPIO_2, 1);
-    GPIO_write(CONFIG_GPIO_3, 1);
-    GPIO_write(CONFIG_GPIO_4, 1);
-    GPIO_write(CONFIG_GPIO_5, 1);
-    GPIO_write(CONFIG_GPIO_6, 1);
-    GPIO_write(CONFIG_GPIO_7, 1);
-    GPIO_write(CONFIG_GPIO_8_TRIG, 1);
+    GPIO_write(Board_GPIO0, 1);
+    GPIO_write(Board_GPIO1, 1);
+    GPIO_write(Board_GPIO2, 1);
+    GPIO_write(Board_GPIO3, 1);
+    GPIO_write(Board_GPIO4, 1);
+    GPIO_write(Board_GPIO5, 1);
+    GPIO_write(Board_GPIO6, 1);
+    GPIO_write(Board_GPIO7, 1);
+    GPIO_write(Board_GPIO8_TRIG, 1);
 
 }
 
@@ -154,21 +154,42 @@ void initGPIO() {
 
     GPIO_init();
 
-    GPIO_setConfig(CONFIG_GPIO_1, GPIO_CFG_OUT_STD | GPIO_CFG_OUT_LOW);
-    GPIO_setConfig(CONFIG_GPIO_2, GPIO_CFG_OUT_STD | GPIO_CFG_OUT_LOW);
-    GPIO_setConfig(CONFIG_GPIO_3, GPIO_CFG_OUT_STD | GPIO_CFG_OUT_LOW);
-    GPIO_setConfig(CONFIG_GPIO_4, GPIO_CFG_OUT_STD | GPIO_CFG_OUT_LOW);
-    GPIO_setConfig(CONFIG_GPIO_5, GPIO_CFG_OUT_STD | GPIO_CFG_OUT_LOW);
-    GPIO_setConfig(CONFIG_GPIO_6, GPIO_CFG_OUT_STD | GPIO_CFG_OUT_LOW);
-    GPIO_setConfig(CONFIG_GPIO_7, GPIO_CFG_OUT_STD | GPIO_CFG_OUT_LOW);
+    GPIO_setConfig(Board_GPIO1, GPIO_CFG_OUT_STD | GPIO_CFG_OUT_LOW);
+    GPIO_setConfig(Board_GPIO2, GPIO_CFG_OUT_STD | GPIO_CFG_OUT_LOW);
+    GPIO_setConfig(Board_GPIO3, GPIO_CFG_OUT_STD | GPIO_CFG_OUT_LOW);
+    GPIO_setConfig(Board_GPIO4, GPIO_CFG_OUT_STD | GPIO_CFG_OUT_LOW);
+    GPIO_setConfig(Board_GPIO5, GPIO_CFG_OUT_STD | GPIO_CFG_OUT_LOW);
+    GPIO_setConfig(Board_GPIO6, GPIO_CFG_OUT_STD | GPIO_CFG_OUT_LOW);
+    GPIO_setConfig(Board_GPIO7, GPIO_CFG_OUT_STD | GPIO_CFG_OUT_LOW);
 
-    GPIO_write(CONFIG_GPIO_0, 0);
-    GPIO_write(CONFIG_GPIO_1, 0);
-    GPIO_write(CONFIG_GPIO_2, 0);
-    GPIO_write(CONFIG_GPIO_3, 0);
-    GPIO_write(CONFIG_GPIO_4, 0);
-    GPIO_write(CONFIG_GPIO_5, 0);
-    GPIO_write(CONFIG_GPIO_6, 0);
-    GPIO_write(CONFIG_GPIO_7, 0);
+    GPIO_write(Board_GPIO0, 0);
+    GPIO_write(Board_GPIO1, 0);
+    GPIO_write(Board_GPIO2, 0);
+    GPIO_write(Board_GPIO3, 0);
+    GPIO_write(Board_GPIO4, 0);
+    GPIO_write(Board_GPIO5, 0);
+    GPIO_write(Board_GPIO6, 0);
+    GPIO_write(Board_GPIO7, 0);
+}
+
+void initUART(){
+
+    UART_init();
+
+    UART_Params uartParams;
+
+    /* Create a UART with data processing off. */
+    UART_Params_init(&uartParams);
+    uartParams.writeDataMode = UART_DATA_BINARY;
+    uartParams.readDataMode = UART_DATA_BINARY;
+    uartParams.readReturnMode = UART_RETURN_FULL;
+    uartParams.readEcho = UART_ECHO_OFF;
+    uartParams.baudRate = 115200;
+
+    uart = UART_open(CONFIG_UART_0, &uartParams);
+//
+//    if (uart == NULL)   // Error checking for UART
+//        fatalError(MAIN_TASK_DLOC_FAILED_UART_OPEN);
+
 }
 

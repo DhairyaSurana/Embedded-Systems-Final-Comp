@@ -1,51 +1,57 @@
 #include "com_queue.h"
 #include "cJSON.h"
+#include "uart_term.h"
 
 char * createNewMsg(int pub, int rec, int dist, int time) {
 
+    UART_PRINT("Entered createNewMsg\r\n");
+
     cJSON *msg = cJSON_CreateObject();
+
     cJSON_AddItemToObject(msg, "id", cJSON_CreateString("ultra"));
     cJSON_AddItemToObject(msg, "pub", cJSON_CreateNumber(pub));
     cJSON_AddItemToObject(msg, "rec", cJSON_CreateNumber(rec));
     cJSON_AddItemToObject(msg, "distance", cJSON_CreateNumber(dist));
     cJSON_AddItemToObject(msg, "time", cJSON_CreateNumber(time));
 
-    return cJSON_Print(msg);
+    char *msg_str = cJSON_Print(msg);
+    cJSON_Delete(msg);
+
+    return msg_str;
 }
 
-int sendStatisticsToPublishQueue(mqtt_data_struct statistics)
-{
+
+int sendToQ(data_struct data){
+
     BaseType_t xHigherPriorityTaskWoken = pdFALSE;
-    BaseType_t result = xQueueSendFromISR(publish_queue_handle, &statistics,
+    BaseType_t result = xQueueSendFromISR(publish_queue_handle, &data,
                                          &xHigherPriorityTaskWoken);
     return (pdPASS == result);
 }
 
-int sendStatisticsToSubscribeQueue()
-{
-    BaseType_t xHigherPriorityTaskWoken = pdFALSE;
-    uint8_t ack = 1;
-    BaseType_t result = xQueueSendToBack(subscribe_queue_handle, &ack,
-                                                &xHigherPriorityTaskWoken);
-    return (pdPASS == result);
+int sendTimeMsgToQ(unsigned int timeVal) {
+
+    data_struct data = {.type=time_data, .value.sensor_val=0,
+        .value.time_val=timeVal};
+        return sendToQ(data);
 }
 
-mqtt_data_struct readStatisticsFromPublishQueue()
-{
+int sendSensMsgToQ(int dist) {
 
-//    cJSON *msg = cJSON_CreateObject();
-//        cJSON_AddItemToObject(msg, "id", cJSON_CreateString("ultra"));
-//        cJSON_AddItemToObject(msg, "pub", cJSON_CreateNumber(0));
-//        cJSON_AddItemToObject(msg, "rec", cJSON_CreateNumber(0));
-//        cJSON_AddItemToObject(msg, "distance", cJSON_CreateNumber(0));
-//        cJSON_AddItemToObject(msg, "time", cJSON_CreateNumber(0));
+    UART_PRINT("Entered sendSensMsgToQ");
+    data_struct data = {.type=sensor_data, .value.sensor_val=dist,
+        .value.time_val=0};
+        return sendToQ(data);
+}
 
-//    mqtt_data_struct data = { .type = no_data, .value.message_num_sent = 0,
-//                           .value.message_num_receive = 0, .value.message = "" };
+data_struct readMsgFromQ(){
 
-    mqtt_data_struct data = { .type = no_data, .message = "" };
-
+   // UART_PRINT("Entered readMsgFromQ\r\n");
+//    data_struct data = { .type = no_data, .value.message_num_sent = 0,
+//                             .value.message_num_receive = 0, .value.message = "" };
+    data_struct data;
     xQueueReceive(publish_queue_handle, &data, portMAX_DELAY);
+
     return data;
 }
 
@@ -56,8 +62,8 @@ uint8_t readStatisticsFromSubscribeQueue()
     return ack;
 }
 
-void initStatisticsQueues()
+void initMsgQueue()
 {
-    publish_queue_handle = xQueueCreate(QUEUE_LENGTH, sizeof(cJSON));
-    subscribe_queue_handle = xQueueCreate(QUEUE_LENGTH, sizeof(uint8_t));
+    publish_queue_handle = xQueueCreate(QUEUE_LENGTH, sizeof(data_struct));
+    //subscribe_queue_handle = xQueueCreate(QUEUE_LENGTH, sizeof(uint8_t));
 }

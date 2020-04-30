@@ -21,7 +21,8 @@
 
 /* User Header Files*/
 //#include "debug.h"
-#include "sensor_queue.h"
+//#include "sensor_queue.h"
+#include "com_queue.h"
 
 /*ADC microvolt to mm conversion constants*/
 #define DISTANCE_CONVERSION 1000000
@@ -49,10 +50,10 @@ static bool trigMode = true;
 static bool clearTrig = true;
 
 /*Sends to queue with the amount of time passed since the last callback */
-void trigCallback(Timer_Handle timerHandle);
+void sensorCallback(Timer_Handle handle);
 
 /*edge triggered callback for sensor*/
-void sensorCallback(Timer_Handle timerHandle);
+void trigCallback(Timer_Handle handle);
 
 /*Converts sensor reading value into distance in mm*/
 int convertToCM(uint32_t duration);
