@@ -12,5 +12,5 @@ sensor_struct;
 
 void sensorStructInit(sensor_struct *state);
 
-int getSensorInfo(sensor_struct *curr_sensor, data_struct *new_sens_msg);
+int getSensorInfo(sensor_struct *curr_sensor, data_struct new_sens_msg);
     

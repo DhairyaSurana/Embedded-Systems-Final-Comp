@@ -10,8 +10,10 @@ def plot(x_list, y_list):
 
     plt.scatter(x_list, y_list, s=1)
     
-    plt.xlabel("Time (s)")
+    plt.xlabel("Time (based on 'curTime' value)")
     plt.ylabel("Distance (cm)")
+
+    plt.ylim(bottom=0, top=max(y_list)*2)
 
     plt.show()
 

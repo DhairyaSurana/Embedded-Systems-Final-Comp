@@ -36,3 +36,5 @@ char *getStrValue(cJSON *obj, char *field);
 
 /* Returns a struct with values from str string (JSON format) */
 struct dev_data getJSONData(char *str);
+
+char * createJSONMsg(int pub, int rec, int dist, int time);

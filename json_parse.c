@@ -144,3 +144,19 @@ struct dev_data getJSONData(char *str) {
         return d_data;
 
 }
+
+char * createJSONMsg(int pub, int rec, int dist, int time) {
+
+    cJSON *msg = cJSON_CreateObject();
+
+    cJSON_AddItemToObject(msg, "id", cJSON_CreateString("ultra"));
+    cJSON_AddItemToObject(msg, "pub", cJSON_CreateNumber(pub));
+    cJSON_AddItemToObject(msg, "rec", cJSON_CreateNumber(rec));
+    cJSON_AddItemToObject(msg, "distance", cJSON_CreateNumber(dist));
+    cJSON_AddItemToObject(msg, "time", cJSON_CreateNumber(time));
+
+    char *msg_str = cJSON_Print(msg);
+    cJSON_Delete(msg);
+
+    return msg_str;
+}

@@ -2,24 +2,6 @@
 #include "cJSON.h"
 #include "uart_term.h"
 
-char * createNewMsg(int pub, int rec, int dist, int time) {
-
-    UART_PRINT("Entered createNewMsg\r\n");
-
-    cJSON *msg = cJSON_CreateObject();
-
-    cJSON_AddItemToObject(msg, "id", cJSON_CreateString("ultra"));
-    cJSON_AddItemToObject(msg, "pub", cJSON_CreateNumber(pub));
-    cJSON_AddItemToObject(msg, "rec", cJSON_CreateNumber(rec));
-    cJSON_AddItemToObject(msg, "distance", cJSON_CreateNumber(dist));
-    cJSON_AddItemToObject(msg, "time", cJSON_CreateNumber(time));
-
-    char *msg_str = cJSON_Print(msg);
-    cJSON_Delete(msg);
-
-    return msg_str;
-}
-
 
 int sendToQ(data_struct data){
 
@@ -38,7 +20,6 @@ int sendTimeMsgToQ(unsigned int timeVal) {
 
 int sendSensMsgToQ(int dist) {
 
-    //UART_PRINT("Entered sendSensMsgToQ");
     data_struct data = {.type=sensor_data, .value.sensor_val=dist,
         .value.time_val=0};
     return sendToQ(data);

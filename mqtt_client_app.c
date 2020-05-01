@@ -629,14 +629,7 @@ void * MqttClientThread(void * pvParameters)
 //!
 //*****************************************************************************
 
-int getTime() {
 
-    if(abs(time(NULL) >=  2085978489))
-        return abs(abs(time(NULL)) - 2085978489);
-    else
-        return abs(2085978489 - abs(time(NULL)));
-
-}
 void * MqttClient(void *pvParameters) {
 
       UART_PRINT("Entered MqttClient\r\n");
@@ -669,13 +662,13 @@ void * MqttClient(void *pvParameters) {
 
          if (new_sens_msg.type != no_data) {
 
-             dist = getSensorInfo(&curr_sens_data, &new_sens_msg);    // updates the current data with the new data from the message and prints out values
+             dist = getSensorInfo(&curr_sens_data, new_sens_msg);    // updates the current data with the new data from the message and prints out values
 
              if(dist != 0) {
 
-                 msg = createNewMsg(pub, 0, dist, getTime());
+                 msg = createJSONMsg(pub, 0, dist, curr_sens_data.curTime); // Creates JSON
 
-                 lRetVal = MQTTClient_publish(
+                 lRetVal = MQTTClient_publish(                                 // Publishes msg to MQTT
                                               gMqttClient, (char*) publish_topic,
                                               strlen((char*) publish_topic), (char*) msg,
                                               strlen((char*) msg),
